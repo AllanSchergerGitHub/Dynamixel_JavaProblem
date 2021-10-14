@@ -1,0 +1,269 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package dynamixel;
+
+import static java.lang.Thread.sleep;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ *
+ * @author Allan
+ */
+public class MotorClass {
+    Dynamixel dynamixel = null;
+    int port_num                        = 0;
+    int motorNumber                     = 0;
+    short goalPosMotor                  = 1;
+    String DEVICENAME                   = "COM3";  //linux -> "/dev/ttyUSB0";              
+                                                   // Check which port is being used on your controller
+                                                   // ex) "COM1"   Linux: "/dev/ttyUSB0"
+    //int port_num = dynamixel.portHandler(DEVICENAME);
+    private int[] BaudRate                       = new int[] {1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000};
+    private String mBatch_time_stamp_into_mysql  = "initialized_in_MotorClass";
+    private short[] ADDR_MX_TORQUE_ENABLE        = new short[]{24,24,24,24,24,24,24,24}; // Control table address is different in Dynamixel model. [index size]
+    private byte[] DXL_ID                        = new byte[]{6,2,1,3,16,12,11,13};    // Dynamixel ID: 6 = End Effector; 2 = wrist; 1 = elbow; 3 = sholder; 
+    private int[] PROTOCOL_VERSION               = {1,1,1,1,1,1,1,1};   // See which protocol version is used in the Dynamixel
+    private byte[] TORQUE_ENABLE                 = {1,1,1,1,1,1,1,1};           // Value for enabling the torque
+    private byte[] TORQUE_DISABLE                = {0,0,0,0,0,0,0,0};                  // Value for disabling the torque
+    private short[] ADDR_MX_GOAL_POSITION        = {30,30,30,30,30,30,30,30};  // 182
+    private short dxl_goal_position              = 300;
+    private short[] ADDR_MX_PRESENT_POSITION     = new short[] {36,36,36,36,36,36,36,36};
+    private short[] ADDR_MX_PRESENT_LOAD         = {40,40,40,40,40,40,40,40};
+    private int COMM_SUCCESS                     = 0;                   // Communication Success result value
+    private int COMM_TX_FAIL                     = -1001;               // Communication Tx Failed
+    private short[] ADDR_SET_RETURN_DELAY        = new short[]{5,5,5,5,5,5,5,5}; // NOTE - torque must be off (set to zero 0) before this will work (EEPROM area)
+    private byte[] RETURN_DELAY                  = new byte[] {1,1,1,1,1,1,1,1}; // NOTE - torque must be off (set to zero 0) before this will work (EEPROM area)
+    private byte dxl_error = 0;
+    private int[] Target_Torque                  = {1000,1000,1000,1000,0,0,0,0}; // between 0 and 1023
+    private int[] Target_MovingSpeed             = {50,50,50,40,0,0,0,0}; // between 0 and 1023
+    
+    private short[] ADDR_movingspeed             = {32,32,32,32,32,32,32,32};
+    private short[] ADDR_SET_TORQUE              = {34,34,34,34,34,34,34,34};  // address to set Torque. 
+
+    private boolean mTogglePrintDebugValue = false;
+    
+    private int dxl_comm_result = COMM_TX_FAIL;
+           
+    public void setBatchTime(String Batch_time_stamp_into_mysql){
+        mBatch_time_stamp_into_mysql = Batch_time_stamp_into_mysql;
+    }
+        
+    public void exit(){
+        dynamixel.closePort(port_num);       
+    }
+    
+    public void moveMotor( short dxl_goal_position) {
+        this.dxl_goal_position = dxl_goal_position;
+        
+        if(mTogglePrintDebugValue){
+        System.out.println("moving motor "+motorNumber+" to position "+dxl_goal_position); 
+        }
+        
+        // current actual position:
+//        short position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_MX_PRESENT_POSITION[motorNumber]);
+//        System.out.print("; "+ motorNumber+" position = "+position);
+        dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_MX_GOAL_POSITION[motorNumber], dxl_goal_position);
+      if ((dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber])) != COMM_SUCCESS)
+        {
+            if(mTogglePrintDebugValue){
+            System.out.println(dynamixel.getTxRxResult(PROTOCOL_VERSION[motorNumber], dxl_comm_result));
+            System.err.println(motorNumber+" <<motorNumber.  moveMotor (goal position) NOT done correctly "+dxl_comm_result+" "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
+            System.out.println("additional info on error: "+dxl_comm_result+" "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
+            }
+        }
+        else if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION[motorNumber])) != 0)
+        {
+            System.out.println("here2");
+            dynamixel.printRxPacketError(PROTOCOL_VERSION[motorNumber], dxl_error);
+        }
+      
+        
+        while(true){
+            int moving = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], (short)46);
+            short position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_MX_PRESENT_POSITION[motorNumber]);
+            int load = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_MX_PRESENT_LOAD[motorNumber]);
+            String movingText = "Not moving";
+            if(moving==1){
+                movingText = "Moving";
+            }
+
+            if(mTogglePrintDebugValue){
+            System.out.println("Motor "+motorNumber+", DXL_ID "+DXL_ID[motorNumber]+": "+movingText +"; "+"Load = "+load+"; position "+position+ " Target_Torque "+Target_Torque[motorNumber]);
+            }
+
+//            MysqlLogger.put(MysqlLogger.Type.BETTER, position, position, position, position, motorNumber, motorNumber, motorNumber, motorNumber, mBatch_time_stamp_into_mysql);
+//            
+            boolean stopNow = false;
+            if(moving==0){
+                stopNow=true;
+            }
+            if(stopNow){
+                try {
+                    sleep(50);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(MotorClass.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                if(mTogglePrintDebugValue){
+                System.err.println("break now for motor: "+motorNumber);
+                }
+                break;
+            }
+        }
+        
+        
+    }
+    
+    /**
+     * when mTogglePrintDebugValue = true the program will print out more debugging messages
+     */
+    public void printDebugging(boolean togglevalue) {
+        mTogglePrintDebugValue = togglevalue;
+    }
+    
+    /**
+     * pings the dynamixel to determine the position (rotational position) of the device
+     * @return 
+     */
+    public short readPosition() {
+        //System.out.println("readPosition port_num = "+port_num+" "+PROTOCOL_VERSION[motorNumber]+" "+ DXL_ID[motorNumber]+" "+ADDR_MX_PRESENT_POSITION[motorNumber]);
+        //port_num = dynamixel.portHandler(DEVICENAME);
+        // current actual position:
+        short position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_MX_PRESENT_POSITION[motorNumber]);
+        if ((dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber])) != COMM_SUCCESS)
+        {
+            if(mTogglePrintDebugValue){
+            System.err.println(motorNumber+" <<motorNumber.  Position Not read correctly "+dxl_comm_result+" "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
+            }
+        }
+        //System.out.println("readPosition "+position);
+        return position;
+    }
+        
+    /**
+     * pings the dynamixel to determine the load on the device
+     * @return 
+     */
+    public int readLoad() {
+        int load = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_MX_PRESENT_LOAD[motorNumber]);
+        if ((dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber])) != COMM_SUCCESS)
+        {
+            //System.err.println(load+ " <-load. "+motorNumber + " <<motorNumber. Load Not read correctly"+dxl_comm_result+" "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
+            int loadReadFail = 999999;
+            return loadReadFail;
+        }
+        else if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION[motorNumber])) != 0)
+        {
+            System.err.println(dxl_error+" dxl_error is here --------------------------------------");
+          dynamixel.printRxPacketError(PROTOCOL_VERSION[motorNumber], dxl_error);
+        }
+        return load;
+    }
+    
+    /**
+     * uses the standardized movingSpeed value that is hard coded
+     */
+    public void setMovingSpeed(){
+        // torque is how hard it pushes; speed is how fast speed 35 is ~3 RPM
+        dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_movingspeed[motorNumber], (short)Target_MovingSpeed[motorNumber]); // moving speed set to 20
+        int movingSpeedSetting2 = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_movingspeed[motorNumber]);
+        
+        if (mTogglePrintDebugValue){
+        System.out.println("moving speed "+motorNumber+" set to "+movingSpeedSetting2);
+        }
+    }
+ 
+    /**
+     * supply a movingSpeed value
+     * @param movingSpeed 
+     */
+    public void setMovingSpeed(int movingSpeed){
+        // torque is how hard it pushes; speed is how fast speed 35 is ~3 RPM
+        dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_movingspeed[motorNumber], (short)movingSpeed); // moving speed set to 20
+        int movingSpeedSetting2 = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_movingspeed[motorNumber]);
+        System.out.println("moving speed "+motorNumber+" set to "+movingSpeedSetting2);
+    }
+    
+    /**
+     * will use the standard torque setting with this method
+     */
+    public void setTorque() { 
+        //int port_num = dynamixel.portHandler(DEVICENAME);
+        // torque is how hard it pushes; speed is how fast   
+        dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_SET_TORQUE[motorNumber], (short) Target_Torque[motorNumber]);
+        if ((dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber])) != COMM_SUCCESS)
+        {
+            System.out.println("setTorque Error: "+dxl_comm_result+" "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
+            System.out.println("  details: " + dynamixel.getTxRxResult(PROTOCOL_VERSION[motorNumber], dxl_comm_result));
+        }
+        else if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION[motorNumber])) != 0)
+        {
+            System.out.println("here2");
+          dynamixel.printRxPacketError(PROTOCOL_VERSION[motorNumber], dxl_error);
+        }
+        
+        int TorqueSetting = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_SET_TORQUE[motorNumber]);
+        System.out.println("Torque "+motorNumber+" set to "+TorqueSetting);
+    }
+    
+    /**
+     * this will use a custom torque value supplied by the call to the method
+     * @param torque 
+     */
+    public void setTorque(int torque) { 
+        //int port_num = dynamixel.portHandler(DEVICENAME);
+        int mtorque = torque; // torque is how hard it pushes; speed is how fast   
+        dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_SET_TORQUE[motorNumber], (short) mtorque);
+        if ((dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber])) != COMM_SUCCESS)
+        {
+            System.out.println("setTorque(int torque) error "+dxl_comm_result+" "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
+            System.out.println("   details: "+dynamixel.getTxRxResult(PROTOCOL_VERSION[motorNumber], dxl_comm_result));
+        }
+        else if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION[motorNumber])) != 0)
+        {
+          System.out.println("here2");
+          dynamixel.printRxPacketError(PROTOCOL_VERSION[motorNumber], dxl_error);
+        }
+        
+        int TorqueSetting = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_SET_TORQUE[motorNumber]);
+        System.out.println("Torque "+motorNumber+" set to "+TorqueSetting);
+    }
+    
+    public void getTorque(){
+        int TorqueSetting = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_SET_TORQUE[motorNumber]);
+        System.out.println("Torque "+motorNumber+" set to "+TorqueSetting);
+    }
+    
+    public void disableTorque() {
+        dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_MX_TORQUE_ENABLE[motorNumber], TORQUE_DISABLE[motorNumber]);
+        if ((dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber])) != COMM_SUCCESS)
+        {
+            System.out.println("here attempting to disable "+dxl_comm_result+" "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
+            System.out.println(dynamixel.getTxRxResult(PROTOCOL_VERSION[motorNumber], dxl_comm_result));
+        }
+        else if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION[motorNumber])) != 0)
+        {
+            System.out.println("here2 attempting to disable");
+          dynamixel.printRxPacketError(PROTOCOL_VERSION[motorNumber], dxl_error);
+        }
+    }
+    
+    public void enableTorque() {
+        // Enable Dynamixel Torque
+        dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_MX_TORQUE_ENABLE[motorNumber], TORQUE_ENABLE[motorNumber]);
+    }
+    
+    public void makeDynamix(Dynamixel dynamixel, int motorNumber) {
+        this.dynamixel = dynamixel;
+        this.motorNumber = motorNumber;
+        System.err.println("BaudRate: "+BaudRate[motorNumber]+"; motorNumber: "+motorNumber);
+        dynamixel.setBaudRate(port_num, BaudRate[motorNumber]);
+        // set return delay (response speed). Torque must be off for this to be set/adjusted (EEPROM).
+        dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_SET_RETURN_DELAY[motorNumber], RETURN_DELAY[motorNumber]);
+        // Enable Dynamixel Torque
+        dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_MX_TORQUE_ENABLE[motorNumber], TORQUE_ENABLE[motorNumber]);
+    }
+}
