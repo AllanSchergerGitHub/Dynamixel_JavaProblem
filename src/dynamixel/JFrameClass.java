@@ -1,160 +1,43 @@
 /*
+
+started to refactor the code at 9:20PM on Dec 13, 2021
+https://stackoverflow.com/questions/26265002/pause-and-resume-swingworker-doinbackground
+
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package dynamixel;
 
+import com.sun.jna.Native;
 import java.awt.Color;
+import static java.lang.Math.abs;
 import static java.lang.Thread.sleep;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
 
 public class JFrameClass extends javax.swing.JFrame {
-     private final ReadPositionsLoadEtc mReadPositionsLoadEtc = new ReadPositionsLoadEtc();
-     
-     final class ReadPositionsLoadEtc extends SwingWorker<Void, String> {
-        @Override
-        protected Void doInBackground() {
-            try {
-                System.err.println("made it here");
-                sleep(3500); // give motors time to connect before reading from them
-            } catch (InterruptedException ex) {
-                Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            
-            while(true) {
-                try {    
-                    if (FollowDriverFlag) {
-                        System.out.println("follow other arm here");
-                        position5 = motor5.readPosition();
-                        //System.out.println("End Effector Position 1 = " + position5);
-                        position6 = motor6.readPosition();
-                        //System.out.println("Wrist Position 2 = " + position6);
-                        position7 = motor7.readPosition(); // for some reason if a motor isn't created it won't error here - but it won't move on either...?
-                        //System.out.println("Elbow Position 3 = " + position7);
-                        position8 = motor8.readPosition();
-                        //System.out.println("Sholder Position 4 = " + position8);
-                        
-                        if (position5 < oldPosition5 *.9 && position5 > 0) {
-                            position5 = (short) (oldPosition5 * 0.9);
-                            System.out.println("POSITION5 " + position5);
-                        }
-                        if (position6 < oldPosition6 *.9 && position6 > 0 ) {
-                            position6 = (short) (oldPosition6 * 0.9);
-                            System.out.println("POSITION6 " + position6);
-                        }
-                        if (position7 < oldPosition7 *.9 && position7 > 0 ) {
-                            position7 = (short) (oldPosition7 * 0.9);
-                        }
-                        if (position8 < oldPosition8 *.9 && position8 > 0 ) {
-                            position8 = (short) (oldPosition8 * 0.9);
-                        }
-                        
-                        if (position5 > oldPosition5 *1.1 && position5 > 0) {
-                            position5 = (short) (oldPosition5 * 1.1);
-                        }
-                        if (position6 > oldPosition6 *1.1 && position6 > 0) {
-                            position6 = (short) (oldPosition6 * 1.1);
-                        }
-                        if (position7 > oldPosition7 *1.1 && position7 > 0) {
-                            position7 = (short) (oldPosition7 * 1.1);
-                        }
-                        if (position8 > oldPosition8 *1.1 && position8 > 0) {
-                            position8 = (short) (oldPosition8 * 1.1);
-                        }
-                        
-                        oldPosition5 = position5;
-                        oldPosition6 = position6;
-                        oldPosition7 = position7;
-                        oldPosition8 = position8;
-                        
-                        System.out.println("----------TARGET POSITION5 " + position5);
-                        motor1.moveMotor((short)(position5));
-                        motor2.moveMotor((short)(position6));
-                        motor3.moveMotor((short)(position7));
-                        motor4.moveMotor((short)(position8));
-                        }
 
-                        position1 = motor1.readPosition(); // error here may mean this is starting before devices are connected.
-                        jTextField_PositionMtr0.setText(position1+"");
-                        int load1 = motor1.readLoad();
-                        if (load1 == 999999){
-                            jLabelMotor1.setOpaque(true);
-                            jLabelMotor1.setBackground(Color.red);
-                        }
-                        else {
-                            jLabelMotor1.setBackground(Color.green);
-                        }
-
-                        sleep(40); // RxTx takes 100 ms? need to reread documentation.
-                        position2 = motor2.readPosition();	
-                        jTextField_PositionMtr1.setText(position2+"");	
-                        int load2 = motor2.readLoad();	
-                        if (load2 == 999999){	
-                            jLabelMotor2.setOpaque(true);
-                            jLabelMotor2.setBackground(Color.red);	
-                        }	
-                        else {	
-                            jLabelMotor2.setOpaque(true);
-                            jLabelMotor2.setBackground(Color.green);	
-                        }	
-
-
-                         sleep(40); // RxTx takes 100 ms? need to reread documentation.	
-                        position3 = motor3.readPosition();	
-                        jTextField_PositionMtr2.setText(position3+"");	
-                        int load3 = motor3.readLoad();	
-                        if (load3 == 999999){
-                            jLabelMotor3.setOpaque(true);
-                            jLabelMotor3.setBackground(Color.red);	
-                        }	
-                        else {
-                            jLabelMotor3.setOpaque(true);
-                            jLabelMotor3.setBackground(Color.green);	
-                        }
-
-                        sleep(40); // RxTx takes 100 ms? need to reread documentation.
-                        position4 = motor4.readPosition();	
-                        jTextField_PositionMtr3.setText(position4+"");	
-                        int load4 = motor4.readLoad();	
-                        if (load4 == 999999){
-                            jLabelMotor4.setOpaque(true);
-                            jLabelMotor4.setBackground(Color.red);	
-                        }	
-                        else {	
-                            jLabelMotor4.setOpaque(true);
-                            jLabelMotor4.setBackground(Color.green);	
-                        }	
-
-                    System.out.println("target positions " + position5 + " " + position6 + " " + position7 + " " + position8);
-                    System.out.println("actual positions " + position1 + " " + position2 + " " + position3 + " " + position4);
-                    
-                    double yDistance = 2;
-                    String time_stamp_into_mysql = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
-                    scenarioSaveName = jTextFieldRecordScenarioName.getText();
-                    
-                    if(position1!=0 && position2!=0 && position3!=0 && position4!=0){ // only record when positions are not zero	
-                         if(recordPositions==1 || recordOnce == 1){	
-                            recordOnce = 0;	
-                        }	
-                    }                    
-                    
-                    try {
-                        Thread.sleep(250);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }            
-    }
-       
     public String Batch_time_stamp_into_mysql = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
     Dynamixel dynamixel = new Dynamixel();
     String DEVICENAME                   = "COM3";   
@@ -163,21 +46,22 @@ public class JFrameClass extends javax.swing.JFrame {
     short position2 = 0;
     short position3 = 0;
     short position4 = 0;
-    short position5 = 440;
-    short position6 = 552;
-    short position7 = 498;
-    short position8 = 517;
-    short oldPosition5 = 440;
-    short oldPosition6 = 552;
-    short oldPosition7 = 498;
-    short oldPosition8 = 517;
-
+    short position5 = 200;
+    short position6 = 250;
+    short position7 = 350;
+    short position8 = 480;
+    short oldPosition5 = 200;
+    short oldPosition6 = 250;
+    short oldPosition7 = 350;
+    short oldPosition8 = 480;
+    Double ChangeBand = 0.01; // if the change in position is within this % range a new position is not printed to screen to reduce printouts
+    
     private String scenarioSaveName = "initialized";
     private int recordPositions = 0; // 0 means do not record; 1 means yes to record
     private int recordOnce = 0; // records one record to mySQL and then stops recording.
-    int TargetPosMtr0 = 440;
-    int TargetPosMtr1 = 550;
-    int TargetPosMtr2 = 500;
+    int TargetPosMtr0 = 200;
+    int TargetPosMtr1 = 250;
+    int TargetPosMtr2 = 400;
     int TargetPosMtr3 = 480;
     int port_num = 0;
     int load1 = 0;
@@ -186,6 +70,7 @@ public class JFrameClass extends javax.swing.JFrame {
     int load4 = 0;
     int mGoalPosLabelMotor1             = 0;
     int PROTOCOL_VERSION                = 1;
+    int group_num = dynamixel.groupBulkRead(port_num, PROTOCOL_VERSION);
     byte DXL_ID                         = 6;    
     short ADDR_MX_TORQUE_ENABLE         = 24;
     short ADDR_MX_GOAL_POSITION         = 30;
@@ -203,105 +88,335 @@ public class JFrameClass extends javax.swing.JFrame {
     MotorClass motor8 = new MotorClass();
     
     public JFrameClass() {
-        
-        port_num = dynamixel.portHandler(DEVICENAME);
-        dynamixel.packetHandler();
-        dynamixel.openPort(port_num);         
-        mReadPositionsLoadEtc.execute();
-        
-        initComponents();        
-        motorNumber = 0;
-        motor1.setBatchTime(Batch_time_stamp_into_mysql);
-        motor1.makeDynamix(dynamixel, motorNumber);
-        motor1.setMovingSpeed();
-        motor1.setTorque();
+        initComponents();
+        final JTextArea textArea = new JTextArea(20, 50);
+        final PausableSwingWorker<Void, String> worker = new PausableSwingWorker<Void, String>() {
+                @Override
+                protected Void doInBackground() {
+                    System.out.println("here4?");
+                    while (true) {
+                       System.out.println("here2?");
+                        
+                    Native.setProtected(true);
+                    port_num = dynamixel.portHandler(DEVICENAME);
+                    dynamixel.packetHandler();
+                    dynamixel.closePort(port_num);         
+                    dynamixel.openPort(port_num); 
+                    System.err.println("BaudRate: "+1000000+"; motorNumber: "+motorNumber);
+                    dynamixel.setBaudRate(port_num, 1000000);
+                    if(dynamixel.openPort(port_num)){
+                        System.err.println("Port Open: "+port_num);
+                    }
+                    else
+                    {
+                      System.err.println("Failed to open the port!");
+                    }
+                    //mReadPositionsLoadEtc.execute();
+                    
 
-        motorNumber = 1;
-        motor2.setBatchTime(Batch_time_stamp_into_mysql);
-        motor2.makeDynamix(dynamixel, motorNumber);
-        motor2.setMovingSpeed();
-        motor2.setTorque();
+                    motorNumber = 0;
+                    motor1.setBatchTime(Batch_time_stamp_into_mysql);
+                    motor1.makeDynamix(dynamixel, motorNumber);
+                    motor1.setMovingSpeed();
+                    motor1.setTorque();
 
-        motorNumber = 2; // wrist
-        motor3.setBatchTime(Batch_time_stamp_into_mysql);
-        motor3.makeDynamix(dynamixel, motorNumber);
-        motor3.setMovingSpeed();
-        motor3.setTorque();
-        System.err.println("motor3 pos: "+motor3.readPosition());
+                    motorNumber = 1;
+                    motor2.setBatchTime(Batch_time_stamp_into_mysql);
+                    motor2.makeDynamix(dynamixel, motorNumber);
+                    motor2.setMovingSpeed();
+                    motor2.setTorque();
 
-        try {
-            sleep(100);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(MotorClass.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        motorNumber = 3; // shoulder
-        motor4.setBatchTime(Batch_time_stamp_into_mysql);
-        motor4.makeDynamix(dynamixel, motorNumber);
-        motor4.setMovingSpeed();
-        motor4.setTorque();
-        System.err.println("motor4 pos: "+motor4.readPosition());
+                    motorNumber = 2; // wrist
+                    motor3.setBatchTime(Batch_time_stamp_into_mysql);
+                    motor3.makeDynamix(dynamixel, motorNumber);
+                    motor3.setMovingSpeed();
+                    motor3.setTorque();
+                    System.err.println("motor3 pos: "+motor3.readPosition());
 
-        motorNumber = 4; // shoulder on control arm (this is the arm to manually control)
-        motor5.setBatchTime(Batch_time_stamp_into_mysql);
-        motor5.makeDynamix(dynamixel, motorNumber);
-        motor5.setMovingSpeed();
-        motor5.setTorque();
-        System.err.println("motor5 pos: "+motor5.readPosition());
+                    try {
+                        sleep(25);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(MotorClass.class.getName()).log(Level.SEVERE, null, ex);
+                    }
 
-        motorNumber = 5; // shoulder on control arm (this is the arm to manually control)
-        motor6.setBatchTime(Batch_time_stamp_into_mysql);
-        motor6.makeDynamix(dynamixel, motorNumber);
-        motor6.setMovingSpeed();
-        motor6.setTorque();
-        System.err.println("motor6 pos: "+motor6.readPosition());
+                    motorNumber = 3; // shoulder
+                    motor4.setBatchTime(Batch_time_stamp_into_mysql);
+                    motor4.makeDynamix(dynamixel, motorNumber);
+                    motor4.setMovingSpeed();
+                    motor4.setTorque();
+                    System.err.println("motor4 pos: "+motor4.readPosition());
 
-        motorNumber = 6; // shoulder on control arm (this is the arm to manually control)
-        motor7.setBatchTime(Batch_time_stamp_into_mysql);
-        motor7.makeDynamix(dynamixel, motorNumber);
-        motor7.setMovingSpeed();
-        motor7.setTorque();
-        System.err.println("motor7 pos: "+motor7.readPosition());
+                    motorNumber = 4; // shoulder on control arm (this is the arm to manually control)
+                    motor5.setBatchTime(Batch_time_stamp_into_mysql);
+                    motor5.makeDynamix(dynamixel, motorNumber);
+                    motor5.setMovingSpeed();
+                    motor5.setTorque();
+                    System.err.println("motor5 pos: "+motor5.readPosition());
 
-        motorNumber = 7; // shoulder on control arm (this is the arm to manually control)
-        motor8.setBatchTime(Batch_time_stamp_into_mysql);
-        motor8.makeDynamix(dynamixel, motorNumber);
-        motor8.setMovingSpeed();
-        motor8.setTorque();
-        System.err.println("motor8 pos: "+motor8.readPosition());
+                    motorNumber = 5; // shoulder on control arm (this is the arm to manually control)
+                    motor6.setBatchTime(Batch_time_stamp_into_mysql);
+                    motor6.makeDynamix(dynamixel, motorNumber);
+                    motor6.setMovingSpeed();
+                    motor6.setTorque();
+                    System.err.println("motor6 pos: "+motor6.readPosition());
 
-        try {
-            sleep(1000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(MotorClass.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        dxl_goal_position = 100;
-        motor1.moveMotor(dxl_goal_position);
-        dxl_goal_position = 650;
-        motor2.moveMotor(dxl_goal_position);
-        dxl_goal_position = 450;
-        motor3.moveMotor(dxl_goal_position);
-        dxl_goal_position = 520;
-        motor4.moveMotor(dxl_goal_position); // shoulder
-        try {
-            sleep(1500);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(MotorClass.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        dxl_goal_position = (short) TargetPosMtr0; // end effector
-        motor1.moveMotor(dxl_goal_position);
-        
-        dxl_goal_position = (short) TargetPosMtr1; // elbow
-        motor2.moveMotor(dxl_goal_position);
-        
-        dxl_goal_position = (short) TargetPosMtr2; // wrist
-        motor3.moveMotor(dxl_goal_position);
-        
-        dxl_goal_position = (short) TargetPosMtr3; // shoulder
-        motor4.moveMotor(dxl_goal_position);
-        
+                    motorNumber = 6; // shoulder on control arm (this is the arm to manually control)
+                    motor7.setBatchTime(Batch_time_stamp_into_mysql);
+                    motor7.makeDynamix(dynamixel, motorNumber);
+                    motor7.setMovingSpeed();
+                    motor7.setTorque();
+                    System.err.println("motor7 pos: "+motor7.readPosition());
+
+                    motorNumber = 7; // shoulder on control arm (this is the arm to manually control)
+                    motor8.setBatchTime(Batch_time_stamp_into_mysql);
+                    motor8.makeDynamix(dynamixel, motorNumber);
+                    motor8.setMovingSpeed();
+                    motor8.setTorque();
+                    System.err.println("motor8 pos: "+motor8.readPosition());
+
+                    try {
+                        sleep(1000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(MotorClass.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                    dxl_goal_position = 200;
+                    motor1.moveMotor(dxl_goal_position);
+                    dxl_goal_position = 350;
+                    motor2.moveMotor(dxl_goal_position);
+                    dxl_goal_position = 400;
+                    motor3.moveMotor(dxl_goal_position);
+                    dxl_goal_position = 520;
+                    motor4.moveMotor(dxl_goal_position); // shoulder
+                    try {
+                        sleep(1500);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(MotorClass.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                    dxl_goal_position = (short) TargetPosMtr0; // end effector
+                    motor1.moveMotor(dxl_goal_position);
+
+                    dxl_goal_position = (short) TargetPosMtr1; // elbow
+                    motor2.moveMotor(dxl_goal_position);
+
+                    dxl_goal_position = (short) TargetPosMtr2; // wrist
+                    motor3.moveMotor(dxl_goal_position);
+
+                    dxl_goal_position = (short) TargetPosMtr3; // shoulder
+                    motor4.moveMotor(dxl_goal_position);
+
+                    System.out.println("------------------------------------------------------------------ end of jclass");
+
+                    int x1 = 0;
+
+                    while(true){
+                        x1 = x1 + 1;
+                        try {
+                            System.err.println("made it here");
+                            sleep(4500); // give motors time to connect before reading from them
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        Boolean motor5Change = false;
+                        Boolean motor6Change = false;
+                        Boolean motor7Change = false;
+                        Boolean motor8Change = false;
+                        int x = 0;
+                        while(true) {
+                            x = x + 1;
+                            try {    
+                                if (FollowDriverFlag) { 
+                                    // if this flag is true then arm 2 will follow the manual movement of arm 1
+                                    position5 = motor5.readPosition();
+                                    //System.out.println("End Effector Position 1 = " + position5);
+                                    position6 = motor6.readPosition();
+                                    //System.out.println("Wrist Position 2 = " + position6);
+                                    position7 = motor7.readPosition(); // for some reason if a motor isn't created it won't error here - but it won't move on either...?
+                                    //System.out.println("Elbow Position 3 = " + position7);
+                                    position8 = motor8.readPosition();
+                                    //System.out.println("Sholder Position 4 = " + position8);
+
+                                    // this section is designed to prevent extreme motions based on potentially erroneous readings
+                                        if (position5 < oldPosition5 *.8 && position5 > 0) {
+                                            position5 = (short) (oldPosition5 * 0.8);
+                                            //System.out.println("POSITION5 " + position5);
+                                        }
+                                        if (position6 < oldPosition6 *.8 && position6 > 0 ) {
+                                            position6 = (short) (oldPosition6 * 0.8);
+                                            //System.out.println("POSITION6 " + position6);
+                                        }
+                                        if (position7 < oldPosition7 *.8 && position7 > 0 ) {
+                                            position7 = (short) (oldPosition7 * 0.8);
+                                        }
+                                        if (position8 < oldPosition8 *.8 && position8 > 0 ) {
+                                            position8 = (short) (oldPosition8 * 0.8);
+                                        }
+
+                                        if (position5 > oldPosition5 *1.2 && position5 > 0) {
+                                            position5 = (short) (oldPosition5 * 1.2);
+                                            //System.out.println("POSITION5 TWO " + position5);
+                                        }
+                                        if (position6 > oldPosition6 *1.2 && position6 > 0) {
+                                            position6 = (short) (oldPosition6 * 1.2);
+                                        }
+                                        if (position7 > oldPosition7 *1.2 && position7 > 0) {
+                                            position7 = (short) (oldPosition7 * 1.2);
+                                        }
+                                        if (position8 > oldPosition8 *1.2 && position8 > 0) {
+                                            position8 = (short) (oldPosition8 * 1.2);
+                                        }
+                                        if (position5 == 0) {
+                                            position5 = (short) (oldPosition5);
+                                            //System.out.println("POSITION5 Three " + position5);
+                                        }
+                                        if (position6 == 0) {
+                                            position6 = (short) (oldPosition6);
+                                            //System.out.println("POSITION5 Three " + position5);
+                                        }
+                                        if (position7 == 0) {
+                                            position7 = (short) (oldPosition7);
+                                            //System.out.println("POSITION5 Three " + position5);
+                                        }
+                                        if (position8 == 0) {
+                                            position8 = (short) (oldPosition8);
+                                            //System.out.println("POSITION5 Three " + position5);
+                                        }
+
+                                        motor5Change = false;
+                                        motor6Change = false;
+                                        motor7Change = false;
+                                        motor8Change = false;
+
+                                        if (abs(oldPosition5 - position5)>oldPosition5*ChangeBand) {
+                                            motor5Change = true;
+                                        }
+                                        if (abs(oldPosition6 - position6)>oldPosition6*ChangeBand) {
+                                            motor6Change = true;
+                                        }
+                                        if (abs(oldPosition7 - position7)>oldPosition7*ChangeBand) {
+                                            motor7Change = true;
+                                        }
+                                        if (abs(oldPosition8 - position8)>oldPosition8*ChangeBand) {
+                                            motor8Change = true;
+                                        }
+
+                                        oldPosition5 = position5;
+                                        oldPosition6 = position6;
+                                        oldPosition7 = position7;
+                                        oldPosition8 = position8;
+
+                                    //System.out.println("----------TARGET POSITION5 " + position5);
+                                    if(motor5Change || motor6Change || motor7Change || motor8Change) {
+                                        System.out.println("---------- Move Motors ------------");
+                                        System.out.println("target positions " + position5 + " " + position6 + " " + position7 + " " + position8);
+                                        System.out.println("actual positions " + position1 + " " + position2 + " " + position3 + " " + position4);
+                                    }
+                                    {
+                                        System.out.print(".");
+                                    }
+
+                                    String time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
+                                    System.out.println(time_stamp);
+                                    System.out.print("move motor 5 ");
+                                    motor1.moveMotor((short)(position5));
+                                    time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
+                                    System.out.println(time_stamp);
+                                    System.out.print("move motor 6 ");
+                                    motor2.moveMotor((short)(position6));
+                                    time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
+                                    System.out.println(time_stamp);
+                                    System.out.print("move motor 7 ");
+                                    motor3.moveMotor((short)(position7));
+                                    time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
+                                    System.out.println(time_stamp);
+                                    System.out.print("move motor 8 ");
+                                    motor4.moveMotor((short)(position8));
+                                    time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
+                                    System.out.println("Last time_stamp " + time_stamp);
+                                    }
+
+                                    //System.err.println("Max JVM memory: " + Runtime.getRuntime().maxMemory());
+                                    //long memory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                                    //System.out.println("Used memory is bytes: " + memory);
+
+                                    position1 = motor1.readPosition(); // error here may mean this is starting before devices are connected.
+                                    jTextField_PositionMtr0.setText(position1+"");
+                                    sleep(1);
+                                    short load1 = motor1.readLoad();
+                                    System.out.println("Load1 " + load1 + " Position motor1 "+position1);
+                                    if (load1 == 16959){
+                                        jLabelMotor1.setOpaque(true);
+                                        jLabelMotor1.setBackground(Color.red);
+                                    }
+                                    else {
+                                        jLabelMotor1.setBackground(Color.green);
+                                    }
+
+                                    sleep(2); // RxTx takes 100 ms? need to reread documentation.
+                                    position2 = motor2.readPosition();	
+                                    jTextField_PositionMtr1.setText(position2+"");	
+                                    int load2 = motor2.readLoad();	
+                                    if (load2 == 999999){	
+                                        jLabelMotor2.setOpaque(true);
+                                        jLabelMotor2.setBackground(Color.red);	
+                                    }	
+                                    else {	
+                                        jLabelMotor2.setOpaque(true);
+                                        jLabelMotor2.setBackground(Color.green);	
+                                    }	
+
+
+                                     sleep(2); // RxTx takes 100 ms? need to reread documentation.	
+                                    position3 = motor3.readPosition();	
+                                    jTextField_PositionMtr2.setText(position3+"");	
+                                    int load3 = motor3.readLoad();	
+                                    if (load3 == 999999){
+                                        jLabelMotor3.setOpaque(true);
+                                        jLabelMotor3.setBackground(Color.red);	
+                                    }	
+                                    else {
+                                        jLabelMotor3.setOpaque(true);
+                                        jLabelMotor3.setBackground(Color.green);	
+                                    }
+
+                                    sleep(2); // RxTx takes 100 ms? need to reread documentation.
+                                    position4 = motor4.readPosition();	
+                                    jTextField_PositionMtr3.setText(position4+"");	
+                                    int load4 = motor4.readLoad();	
+                                    if (load4 == 999999){
+                                        jLabelMotor4.setOpaque(true);
+                                        jLabelMotor4.setBackground(Color.red);	
+                                    }	
+                                    else {	
+                                        jLabelMotor4.setOpaque(true);
+                                        jLabelMotor4.setBackground(Color.green);	
+                                    }	
+
+                                double yDistance = 2;
+                                String time_stamp_into_mysql = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
+                                scenarioSaveName = jTextFieldRecordScenarioName.getText();
+
+                                if(position1!=0 && position2!=0 && position3!=0 && position4!=0){ // only record when positions are not zero	
+                                     if(recordPositions==1 || recordOnce == 1){	
+                                        recordOnce = 0;	
+                                    }	
+                                }                    
+
+                                try {
+                                    Thread.sleep(50);
+                                } catch (InterruptedException ex) {
+                                    Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    }
+                }
+            }
+        };    
+      worker.execute();
     }
             
     /**
@@ -405,7 +520,7 @@ public class JFrameClass extends javax.swing.JFrame {
         getContentPane().add(jScrollBarMtr0, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 23, 30, 160));
 
         jLabelMotor1.setText("Position");
-        getContentPane().add(jLabelMotor1, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 280, 57, 32));
+        getContentPane().add(jLabelMotor1, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 280, 57, 30));
 
         jScrollBarMtr1.setBlockIncrement(20);
         jScrollBarMtr1.setMaximum(1000);
@@ -831,12 +946,12 @@ public class JFrameClass extends javax.swing.JFrame {
     private void jButtonStepUpMtr0ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepUpMtr0ActionPerformed
         int moveIncrement = 25;
         moveIncrement = Integer.parseInt(jTextField_IncrementMtr0.getText());
-        int currentPos = motor1.readPosition();
-        System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr0 "+TargetPosMtr0 );
+        //short currentPos = motor1.readPosition(); // currentPos is a local reading - testing to see if using the more global variable is better
+        System.out.println("currentPos "+ position1 + "; moveIncrement "+moveIncrement +" TargetPosMtr0 "+TargetPosMtr0 );
         TargetPosMtr0 = TargetPosMtr0 + moveIncrement;
         motor1.moveMotor((short)(TargetPosMtr0));
          try {
-             sleep(40);
+             sleep(1);
          } catch (InterruptedException ex) {
              Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
          }
@@ -846,12 +961,12 @@ public class JFrameClass extends javax.swing.JFrame {
     private void jButtonStepDownMtr0ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepDownMtr0ActionPerformed
         int moveIncrement = -25;
         moveIncrement = -Integer.parseInt(jTextField_IncrementMtr0.getText());
-        int currentPos = motor1.readPosition();
+        short currentPos = motor1.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr0 "+TargetPosMtr0 );
         TargetPosMtr0 = TargetPosMtr0 + moveIncrement;
         motor1.moveMotor((short)(TargetPosMtr0));
          try {
-             sleep(40);
+             sleep(1);
          } catch (InterruptedException ex) {
              Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
          }
@@ -859,10 +974,7 @@ public class JFrameClass extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonStepDownMtr0ActionPerformed
 
     private void jButtonExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonExitActionPerformed
-        motor1.exit();
-        motor2.exit();
-        motor3.exit();
-        motor4.exit();
+        dynamixel.closePort(port_num);
         try {
             sleep(750);
         } catch (InterruptedException ex) {
@@ -889,12 +1001,12 @@ public class JFrameClass extends javax.swing.JFrame {
     private void jButtonStepUpMtr1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepUpMtr1ActionPerformed
         int moveIncrement = 25;
         moveIncrement = Integer.parseInt(jTextField_IncrementMtr1.getText());
-        int currentPos = motor2.readPosition();
+        short currentPos = motor2.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr1 "+TargetPosMtr1 );
         TargetPosMtr1 = TargetPosMtr1 + moveIncrement;
         motor2.moveMotor((short)(TargetPosMtr1));
          try {
-             sleep(40);
+             sleep(1);
          } catch (InterruptedException ex) {
              Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
          }
@@ -904,12 +1016,12 @@ public class JFrameClass extends javax.swing.JFrame {
     private void jButtonStepDownMtr1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepDownMtr1ActionPerformed
         int moveIncrement = -25;
         moveIncrement = -Integer.parseInt(jTextField_IncrementMtr1.getText());
-        int currentPos = motor2.readPosition();
+        short currentPos = motor2.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr1 "+TargetPosMtr1 );
         TargetPosMtr1 = TargetPosMtr1 + moveIncrement;
         motor2.moveMotor((short)(TargetPosMtr1));
          try {
-             sleep(40);
+             sleep(1);
          } catch (InterruptedException ex) {
              Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
          }
@@ -939,12 +1051,12 @@ public class JFrameClass extends javax.swing.JFrame {
     private void jButtonStepUpMtr2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepUpMtr2ActionPerformed
         int moveIncrement = 25;
         moveIncrement = Integer.parseInt(jTextField_IncrementMtr2.getText());
-        int currentPos = motor3.readPosition();
+        short currentPos = motor3.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr2 "+TargetPosMtr2 );
         TargetPosMtr2 = TargetPosMtr2 + moveIncrement;
         motor3.moveMotor((short)(TargetPosMtr2));
          try {
-             sleep(40);
+             sleep(1);
          } catch (InterruptedException ex) {
              Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
          }
@@ -954,12 +1066,12 @@ public class JFrameClass extends javax.swing.JFrame {
     private void jButtonStepDownMtr2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepDownMtr2ActionPerformed
         int moveIncrement = -25;
         moveIncrement = -Integer.parseInt(jTextField_IncrementMtr2.getText());
-        int currentPos = motor3.readPosition();
+        short currentPos = motor3.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr2 "+TargetPosMtr2 );
         TargetPosMtr2 = TargetPosMtr2 + moveIncrement;
         motor3.moveMotor((short)(TargetPosMtr2));
          try {
-             sleep(40);
+             sleep(1);
          } catch (InterruptedException ex) {
              Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
          }
@@ -989,12 +1101,12 @@ public class JFrameClass extends javax.swing.JFrame {
     private void jButtonStepUpMtr3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepUpMtr3ActionPerformed
         int moveIncrement = 25;
         moveIncrement = Integer.parseInt(jTextField_IncrementMtr3.getText());
-        int currentPos = motor4.readPosition();
+        short currentPos = motor4.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr3 "+TargetPosMtr3 );
         TargetPosMtr3 = TargetPosMtr3 + moveIncrement;
         motor4.moveMotor((short)(TargetPosMtr3));
          try {
-             sleep(40);
+             sleep(1);
          } catch (InterruptedException ex) {
              Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
          }
@@ -1004,12 +1116,12 @@ public class JFrameClass extends javax.swing.JFrame {
     private void jButtonStepDownMtr3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepDownMtr3ActionPerformed
         int moveIncrement = -25;
         moveIncrement = -Integer.parseInt(jTextField_IncrementMtr3.getText());
-        int currentPos = motor4.readPosition();
+        short currentPos = motor4.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr3 "+TargetPosMtr3 );
         TargetPosMtr3 = TargetPosMtr3 + moveIncrement;
         motor4.moveMotor((short)(TargetPosMtr3));
          try {
-             sleep(40);
+             sleep(1);
          } catch (InterruptedException ex) {
              Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
          }
@@ -1109,6 +1221,8 @@ public class JFrameClass extends javax.swing.JFrame {
         }
         else {
             FollowDriverFlag = true;
+            System.out.println("");
+            System.out.println("------------ Begin to follow other arm -----------------");
             jToggleButton_FollowDriverButton.setText("Following Arm");
             jToggleButton_FollowDriverButton.setOpaque(true);
             jToggleButton_FollowDriverButton.setBackground(Color.red);
@@ -1152,6 +1266,27 @@ public class JFrameClass extends javax.swing.JFrame {
             }
         });
         
+    }
+    
+    abstract class PausableSwingWorker<K, V> extends SwingWorker<K, V> {
+        private volatile boolean isPaused;
+        public final void pause() {
+            if (!isPaused() && !isDone()) {
+                isPaused = true;
+                firePropertyChange("paused", false, true);
+            }
+        }
+
+        public final void resume23() {
+            if (isPaused() && !isDone()) {
+                isPaused = false;
+                firePropertyChange("paused", true, false);
+            }
+        }
+
+        public final boolean isPaused() {
+            return isPaused;
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

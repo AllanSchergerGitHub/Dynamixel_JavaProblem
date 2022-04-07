@@ -49,7 +49,7 @@ interface LibFunction extends Library
 
   public void    printTxRxResult         (int protocol_version, int result);
   public String  getTxRxResult           (int protocol_version, int result);
-  public void    printRxPacketError      (int protocol_version, byte error);
+  public void    printRxPacketError      (int protocol_version, byte error); // See Allan's readme.md file - this has been deprecated
   public String  getRxPacketError        (int protocol_version, byte error);
 
   public int     getLastTxRxResult       (int port_num, int protocol_version);

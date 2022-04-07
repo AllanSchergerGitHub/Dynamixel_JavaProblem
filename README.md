@@ -23,15 +23,18 @@
 ### 
 
 ### A useful tool -> 'Dynamixel Wizard 2.0'
+### 
 ### https://www.automationdirect.com/adc/shopping/catalog/power_transmission_(mechanical)/precision_gearboxes_for_small_nema_motors/nema_23_frame
 ###
 
-### https://community.automationdirect.com/s/global-search/javahttps://community.automationdirect.com/s/global-search/java
-### If you are using Autodirect PLC that supports modbus (all of them?) then get the free library for talking modbus over serial and ethernet for java. That way you will get more cross platform code in addition.
-###
 ### Phidgets requires some libraries to be installed (in addition to the jar). Follow this link:
 ### https://www.phidgets.com/docs/OS_-_Windows#Quick_Downloads
 ### Phidgets Control Panel will start in the background(??) and not close on it's own - this will cause java crashes that don't give a good error message)
 ### To fix the problem - go into task manager and 'end task' on the phidget control panel.
 ###
 ### Under Properties-Sources-Source/Binary Format select JDK 16; Profile Full JRE; Encoding UTF-8
+
+### Extra Information for future - not needed for now.
+### https://community.automationdirect.com/s/global-search/javahttps://community.automationdirect.com/s/global-search/java
+### If you are using Autodirect PLC that supports modbus (all of them?) then get the free library for talking modbus over serial and ethernet for java. That way you will get more cross platform code in addition.
+###
