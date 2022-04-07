@@ -94,6 +94,7 @@ public class JFrameClass extends javax.swing.JFrame {
                 @Override
                 protected Void doInBackground() {
                     System.out.println("here4?");
+                    System.out.println("Make sure power is connected and working. Can I automate this validation step?");
                     while (true) {
                        System.out.println("here2?");
                         
