@@ -30,7 +30,7 @@ public class MotorClass {
     
     private String mBatch_time_stamp_into_mysql  = "initialized_in_MotorClass";
     private short[] ADDR_MX_TORQUE_ENABLE        = new short[]{24,24,24,24,24,24,24,24}; // Control table address is different in Dynamixel model. [index size]
-    private byte[] DXL_ID                        = new byte[]{6,2,1,3,16,12,11,13};    // Dynamixel ID: 6 = End Effector; 2 = wrist; 1 = elbow; 3 = sholder; 
+    private byte[] DXL_ID                        = new byte[]{16,12,11,13, 6,2,1,3};    // Dynamixel ID: 6 = End Effector; 2 = wrist; 1 = elbow; 3 = sholder; 
     private int[] PROTOCOL_VERSION               = {1,1,1,1,1,1,1,1};   // See which protocol version is used in the Dynamixel
     private byte[] TORQUE_ENABLE                 = {1,1,1,1,1,1,1,1};           // Value for enabling the torque
     private byte[] TORQUE_DISABLE                = {0,0,0,0,0,0,0,0};                  // Value for disabling the torque
