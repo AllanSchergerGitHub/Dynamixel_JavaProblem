@@ -46,14 +46,6 @@ public class JFrameClass extends javax.swing.JFrame {
     short position2 = 0;
     short position3 = 0;
     short position4 = 0;
-    short position5 = 200;
-    short position6 = 250;
-    short position7 = 350;
-    short position8 = 480;
-    short oldPosition5 = 200;
-    short oldPosition6 = 250;
-    short oldPosition7 = 350;
-    short oldPosition8 = 480;
     Double ChangeBand = 0.01; // if the change in position is within this % range a new position is not printed to screen to reduce printouts
     
     private String scenarioSaveName = "initialized";
@@ -82,10 +74,6 @@ public class JFrameClass extends javax.swing.JFrame {
     MotorClass motor2 = new MotorClass();
     MotorClass motor3 = new MotorClass();
     MotorClass motor4 = new MotorClass();
-    MotorClass motor5 = new MotorClass();
-    MotorClass motor6 = new MotorClass();
-    MotorClass motor7 = new MotorClass();
-    MotorClass motor8 = new MotorClass();
     
     public JFrameClass() {
         initComponents();
@@ -148,32 +136,6 @@ public class JFrameClass extends javax.swing.JFrame {
                     System.err.println("motor4 pos: "+motor4.readPosition());
 
                     motorNumber = 4; // shoulder on control arm (this is the arm to manually control)
-                    motor5.setBatchTime(Batch_time_stamp_into_mysql);
-                    motor5.makeDynamix(dynamixel, motorNumber);
-                    motor5.setMovingSpeed();
-                    motor5.setTorque();
-                    System.err.println("motor5 pos: "+motor5.readPosition());
-
-                    motorNumber = 5; // shoulder on control arm (this is the arm to manually control)
-                    motor6.setBatchTime(Batch_time_stamp_into_mysql);
-                    motor6.makeDynamix(dynamixel, motorNumber);
-                    motor6.setMovingSpeed();
-                    motor6.setTorque();
-                    System.err.println("motor6 pos: "+motor6.readPosition());
-
-                    motorNumber = 6; // shoulder on control arm (this is the arm to manually control)
-                    motor7.setBatchTime(Batch_time_stamp_into_mysql);
-                    motor7.makeDynamix(dynamixel, motorNumber);
-                    motor7.setMovingSpeed();
-                    motor7.setTorque();
-                    System.err.println("motor7 pos: "+motor7.readPosition());
-
-                    motorNumber = 7; // shoulder on control arm (this is the arm to manually control)
-                    motor8.setBatchTime(Batch_time_stamp_into_mysql);
-                    motor8.makeDynamix(dynamixel, motorNumber);
-                    motor8.setMovingSpeed();
-                    motor8.setTorque();
-                    System.err.println("motor8 pos: "+motor8.readPosition());
 
                     try {
                         sleep(1000);
@@ -219,128 +181,85 @@ public class JFrameClass extends javax.swing.JFrame {
                         } catch (InterruptedException ex) {
                             Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                        Boolean motor5Change = false;
-                        Boolean motor6Change = false;
-                        Boolean motor7Change = false;
-                        Boolean motor8Change = false;
                         int x = 0;
                         while(true) {
+                            System.out.println("doing this now");
                             x = x + 1;
                             try {    
                                 if (FollowDriverFlag) { 
                                     // if this flag is true then arm 2 will follow the manual movement of arm 1
-                                    position5 = motor5.readPosition();
-                                    //System.out.println("End Effector Position 1 = " + position5);
-                                    position6 = motor6.readPosition();
-                                    //System.out.println("Wrist Position 2 = " + position6);
-                                    position7 = motor7.readPosition(); // for some reason if a motor isn't created it won't error here - but it won't move on either...?
-                                    //System.out.println("Elbow Position 3 = " + position7);
-                                    position8 = motor8.readPosition();
-                                    //System.out.println("Sholder Position 4 = " + position8);
 
                                     // this section is designed to prevent extreme motions based on potentially erroneous readings
-                                        if (position5 < oldPosition5 *.8 && position5 > 0) {
-                                            position5 = (short) (oldPosition5 * 0.8);
-                                            //System.out.println("POSITION5 " + position5);
-                                        }
-                                        if (position6 < oldPosition6 *.8 && position6 > 0 ) {
-                                            position6 = (short) (oldPosition6 * 0.8);
-                                            //System.out.println("POSITION6 " + position6);
-                                        }
-                                        if (position7 < oldPosition7 *.8 && position7 > 0 ) {
-                                            position7 = (short) (oldPosition7 * 0.8);
-                                        }
-                                        if (position8 < oldPosition8 *.8 && position8 > 0 ) {
-                                            position8 = (short) (oldPosition8 * 0.8);
-                                        }
-
-                                        if (position5 > oldPosition5 *1.2 && position5 > 0) {
-                                            position5 = (short) (oldPosition5 * 1.2);
-                                            //System.out.println("POSITION5 TWO " + position5);
-                                        }
-                                        if (position6 > oldPosition6 *1.2 && position6 > 0) {
-                                            position6 = (short) (oldPosition6 * 1.2);
-                                        }
-                                        if (position7 > oldPosition7 *1.2 && position7 > 0) {
-                                            position7 = (short) (oldPosition7 * 1.2);
-                                        }
-                                        if (position8 > oldPosition8 *1.2 && position8 > 0) {
-                                            position8 = (short) (oldPosition8 * 1.2);
-                                        }
-                                        if (position5 == 0) {
-                                            position5 = (short) (oldPosition5);
-                                            //System.out.println("POSITION5 Three " + position5);
-                                        }
-                                        if (position6 == 0) {
-                                            position6 = (short) (oldPosition6);
-                                            //System.out.println("POSITION5 Three " + position5);
-                                        }
-                                        if (position7 == 0) {
-                                            position7 = (short) (oldPosition7);
-                                            //System.out.println("POSITION5 Three " + position5);
-                                        }
-                                        if (position8 == 0) {
-                                            position8 = (short) (oldPosition8);
-                                            //System.out.println("POSITION5 Three " + position5);
-                                        }
-
-                                        motor5Change = false;
-                                        motor6Change = false;
-                                        motor7Change = false;
-                                        motor8Change = false;
-
-                                        if (abs(oldPosition5 - position5)>oldPosition5*ChangeBand) {
-                                            motor5Change = true;
-                                        }
-                                        if (abs(oldPosition6 - position6)>oldPosition6*ChangeBand) {
-                                            motor6Change = true;
-                                        }
-                                        if (abs(oldPosition7 - position7)>oldPosition7*ChangeBand) {
-                                            motor7Change = true;
-                                        }
-                                        if (abs(oldPosition8 - position8)>oldPosition8*ChangeBand) {
-                                            motor8Change = true;
-                                        }
-
-                                        oldPosition5 = position5;
-                                        oldPosition6 = position6;
-                                        oldPosition7 = position7;
-                                        oldPosition8 = position8;
-
-                                    //System.out.println("----------TARGET POSITION5 " + position5);
-                                    if(motor5Change || motor6Change || motor7Change || motor8Change) {
-                                        System.out.println("---------- Move Motors ------------");
-                                        System.out.println("target positions " + position5 + " " + position6 + " " + position7 + " " + position8);
-                                        System.out.println("actual positions " + position1 + " " + position2 + " " + position3 + " " + position4);
+//                                        if (position5 < oldPosition5 *.8 && position5 > 0) {
+//                                            position5 = (short) (oldPosition5 * 0.8);
+//                                            //System.out.println("POSITION5 " + position5);
+//                                        }
+//                                        if (position6 < oldPosition6 *.8 && position6 > 0 ) {
+//                                            position6 = (short) (oldPosition6 * 0.8);
+//                                            //System.out.println("POSITION6 " + position6);
+//                                        }
+//                                        if (position7 < oldPosition7 *.8 && position7 > 0 ) {
+//                                            position7 = (short) (oldPosition7 * 0.8);
+//                                        }
+//                                        if (position8 < oldPosition8 *.8 && position8 > 0 ) {
+//                                            position8 = (short) (oldPosition8 * 0.8);
+//                                        }
+//
+//                                        if (position5 > oldPosition5 *1.2 && position5 > 0) {
+//                                            position5 = (short) (oldPosition5 * 1.2);
+//                                            //System.out.println("POSITION5 TWO " + position5);
+//                                        }
+//                                        if (position6 > oldPosition6 *1.2 && position6 > 0) {
+//                                            position6 = (short) (oldPosition6 * 1.2);
+//                                        }
+//                                        if (position7 > oldPosition7 *1.2 && position7 > 0) {
+//                                            position7 = (short) (oldPosition7 * 1.2);
+//                                        }
+//                                        if (position8 > oldPosition8 *1.2 && position8 > 0) {
+//                                            position8 = (short) (oldPosition8 * 1.2);
+//                                        }
+//                                        if (position5 == 0) {
+//                                            position5 = (short) (oldPosition5);
+//                                            //System.out.println("POSITION5 Three " + position5);
+//                                        }
+//                                        if (position6 == 0) {
+//                                            position6 = (short) (oldPosition6);
+//                                            //System.out.println("POSITION5 Three " + position5);
+//                                        }
+//                                        if (position7 == 0) {
+//                                            position7 = (short) (oldPosition7);
+//                                            //System.out.println("POSITION5 Three " + position5);
+//                                        }
+//                                        if (position8 == 0) {
+//                                            position8 = (short) (oldPosition8);
+//                                            //System.out.println("POSITION5 Three " + position5);
+//                                        }
+//
+//                                        oldPosition5 = position5;
+//                                        oldPosition6 = position6;
+//                                        oldPosition7 = position7;
+//                                        oldPosition8 = position8;
+//
+//                                    String time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
+//                                    System.out.println(time_stamp);
+//                                    System.out.print("move motor 5 ");
+//                                    motor1.moveMotor((short)(position5));
+//                                    time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
+//                                    System.out.println(time_stamp);
+//                                    System.out.print("move motor 6 ");
+//                                    motor2.moveMotor((short)(position6));
+//                                    time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
+//                                    System.out.println(time_stamp);
+//                                    System.out.print("move motor 7 ");
+//                                    motor3.moveMotor((short)(position7));
+//                                    time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
+//                                    System.out.println(time_stamp);
+//                                    System.out.print("move motor 8 ");
+//                                    motor4.moveMotor((short)(position8));
+//                                    time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
+//                                    System.out.println("Last time_stamp " + time_stamp);
                                     }
-                                    {
-                                        System.out.print(".");
-                                    }
-
-                                    String time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
-                                    System.out.println(time_stamp);
-                                    System.out.print("move motor 5 ");
-                                    motor1.moveMotor((short)(position5));
-                                    time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
-                                    System.out.println(time_stamp);
-                                    System.out.print("move motor 6 ");
-                                    motor2.moveMotor((short)(position6));
-                                    time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
-                                    System.out.println(time_stamp);
-                                    System.out.print("move motor 7 ");
-                                    motor3.moveMotor((short)(position7));
-                                    time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
-                                    System.out.println(time_stamp);
-                                    System.out.print("move motor 8 ");
-                                    motor4.moveMotor((short)(position8));
-                                    time_stamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
-                                    System.out.println("Last time_stamp " + time_stamp);
-                                    }
-
-                                    //System.err.println("Max JVM memory: " + Runtime.getRuntime().maxMemory());
-                                    //long memory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                                    //System.out.println("Used memory is bytes: " + memory);
-
+                                
                                     position1 = motor1.readPosition(); // error here may mean this is starting before devices are connected.
                                     jTextField_PositionMtr0.setText(position1+"");
                                     sleep(1);
@@ -489,6 +408,8 @@ public class JFrameClass extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         jToggleButton_FollowDriverButton = new javax.swing.JToggleButton();
         jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -518,7 +439,7 @@ public class JFrameClass extends javax.swing.JFrame {
                 jScrollBarMtr0AdjustmentValueChanged(evt);
             }
         });
-        getContentPane().add(jScrollBarMtr0, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 23, 30, 160));
+        getContentPane().add(jScrollBarMtr0, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 53, 30, 130));
 
         jLabelMotor1.setText("Position");
         getContentPane().add(jLabelMotor1, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 280, 57, 30));
@@ -532,7 +453,7 @@ public class JFrameClass extends javax.swing.JFrame {
                 jScrollBarMtr1AdjustmentValueChanged(evt);
             }
         });
-        getContentPane().add(jScrollBarMtr1, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 23, 30, 160));
+        getContentPane().add(jScrollBarMtr1, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 53, 30, 130));
 
         jScrollBarMtr2.setBlockIncrement(20);
         jScrollBarMtr2.setMaximum(1000);
@@ -543,7 +464,7 @@ public class JFrameClass extends javax.swing.JFrame {
                 jScrollBarMtr2AdjustmentValueChanged(evt);
             }
         });
-        getContentPane().add(jScrollBarMtr2, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 23, 33, 160));
+        getContentPane().add(jScrollBarMtr2, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 53, 33, 130));
 
         jScrollBarMtr3.setBlockIncrement(20);
         jScrollBarMtr3.setMaximum(1000);
@@ -554,7 +475,7 @@ public class JFrameClass extends javax.swing.JFrame {
                 jScrollBarMtr3AdjustmentValueChanged(evt);
             }
         });
-        getContentPane().add(jScrollBarMtr3, new org.netbeans.lib.awtextra.AbsoluteConstraints(620, 23, 36, 160));
+        getContentPane().add(jScrollBarMtr3, new org.netbeans.lib.awtextra.AbsoluteConstraints(620, 53, 36, 130));
 
         jLabelMotor2.setText("Position");
         getContentPane().add(jLabelMotor2, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 280, 67, 32));
@@ -565,15 +486,16 @@ public class JFrameClass extends javax.swing.JFrame {
                 jButtonStepUpMtr0ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButtonStepUpMtr0, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 410, -1, -1));
+        getContentPane().add(jButtonStepUpMtr0, new org.netbeans.lib.awtextra.AbsoluteConstraints(195, 410, -1, -1));
 
         jButtonStepDownMtr0.setText("step down");
+        jButtonStepDownMtr0.setPreferredSize(new java.awt.Dimension(72, 22));
         jButtonStepDownMtr0.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonStepDownMtr0ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButtonStepDownMtr0, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 440, -1, -1));
+        getContentPane().add(jButtonStepDownMtr0, new org.netbeans.lib.awtextra.AbsoluteConstraints(195, 440, -1, -1));
 
         jButtonExit.setText("Exit");
         jButtonExit.addActionListener(new java.awt.event.ActionListener() {
@@ -613,15 +535,16 @@ public class JFrameClass extends javax.swing.JFrame {
                 jButtonStepUpMtr1ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButtonStepUpMtr1, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 410, -1, -1));
+        getContentPane().add(jButtonStepUpMtr1, new org.netbeans.lib.awtextra.AbsoluteConstraints(335, 410, -1, -1));
 
         jButtonStepDownMtr1.setText("step down");
+        jButtonStepDownMtr1.setPreferredSize(new java.awt.Dimension(72, 22));
         jButtonStepDownMtr1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonStepDownMtr1ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButtonStepDownMtr1, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 440, -1, -1));
+        getContentPane().add(jButtonStepDownMtr1, new org.netbeans.lib.awtextra.AbsoluteConstraints(335, 440, -1, -1));
 
         jButtonMoveMtr1ToPresetLow.setText("Max Down");
         jButtonMoveMtr1ToPresetLow.addActionListener(new java.awt.event.ActionListener() {
@@ -667,15 +590,16 @@ public class JFrameClass extends javax.swing.JFrame {
                 jButtonStepUpMtr2ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButtonStepUpMtr2, new org.netbeans.lib.awtextra.AbsoluteConstraints(470, 410, -1, -1));
+        getContentPane().add(jButtonStepUpMtr2, new org.netbeans.lib.awtextra.AbsoluteConstraints(465, 410, -1, -1));
 
         jButtonStepDownMtr2.setText("step down");
+        jButtonStepDownMtr2.setPreferredSize(new java.awt.Dimension(72, 22));
         jButtonStepDownMtr2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonStepDownMtr2ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButtonStepDownMtr2, new org.netbeans.lib.awtextra.AbsoluteConstraints(460, 440, -1, -1));
+        getContentPane().add(jButtonStepDownMtr2, new org.netbeans.lib.awtextra.AbsoluteConstraints(465, 440, -1, -1));
 
         jButtonMoveMtr2ToPresetLow.setText("Max Down");
         jButtonMoveMtr2ToPresetLow.addActionListener(new java.awt.event.ActionListener() {
@@ -709,21 +633,21 @@ public class JFrameClass extends javax.swing.JFrame {
         });
         getContentPane().add(jButtonMoveMtr3ToPresetHigh, new org.netbeans.lib.awtextra.AbsoluteConstraints(610, 350, 83, 58));
 
-        jButtonStepUpMtr3.setText("step up");
+        jButtonStepUpMtr3.setText("Left");
         jButtonStepUpMtr3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonStepUpMtr3ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButtonStepUpMtr3, new org.netbeans.lib.awtextra.AbsoluteConstraints(620, 410, -1, -1));
+        getContentPane().add(jButtonStepUpMtr3, new org.netbeans.lib.awtextra.AbsoluteConstraints(615, 410, -1, -1));
 
-        jButtonStepDownMtr3.setText("step down");
+        jButtonStepDownMtr3.setText("Right");
         jButtonStepDownMtr3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonStepDownMtr3ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButtonStepDownMtr3, new org.netbeans.lib.awtextra.AbsoluteConstraints(610, 440, -1, -1));
+        getContentPane().add(jButtonStepDownMtr3, new org.netbeans.lib.awtextra.AbsoluteConstraints(615, 440, -1, -1));
 
         jButtonMoveMtr3ToPresetLow.setText("Max Down");
         jButtonMoveMtr3ToPresetLow.addActionListener(new java.awt.event.ActionListener() {
@@ -893,8 +817,8 @@ public class JFrameClass extends javax.swing.JFrame {
         });
         getContentPane().add(jToggleButtonPrintDebugging, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 540, -1, -1));
 
-        jLabel4.setText("Motor0");
-        getContentPane().add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(214, 0, 40, -1));
+        jLabel4.setText("Elbow");
+        getContentPane().add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 10, 50, 30));
 
         jToggleButton_FollowDriverButton.setText("Follow Driver Arm");
         jToggleButton_FollowDriverButton.addActionListener(new java.awt.event.ActionListener() {
@@ -906,6 +830,12 @@ public class JFrameClass extends javax.swing.JFrame {
 
         jLabel5.setText("Load");
         getContentPane().add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 310, 70, 20));
+
+        jLabel6.setText("End Effector");
+        getContentPane().add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 10, 60, 30));
+
+        jLabel7.setText("Sholder");
+        getContentPane().add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(610, 10, 60, 30));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -948,7 +878,7 @@ public class JFrameClass extends javax.swing.JFrame {
         int moveIncrement = 25;
         moveIncrement = Integer.parseInt(jTextField_IncrementMtr0.getText());
         //short currentPos = motor1.readPosition(); // currentPos is a local reading - testing to see if using the more global variable is better
-        System.out.println("currentPos "+ position1 + "; moveIncrement "+moveIncrement +" TargetPosMtr0 "+TargetPosMtr0 );
+        System.out.println("currentPosXXXXX "+ position1 + "; moveIncrement "+moveIncrement +" TargetPosMtr0 "+TargetPosMtr0 );
         TargetPosMtr0 = TargetPosMtr0 + moveIncrement;
         motor1.moveMotor((short)(TargetPosMtr0));
          try {
@@ -1000,8 +930,9 @@ public class JFrameClass extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonMoveMtr1ToPresetHighActionPerformed
 
     private void jButtonStepUpMtr1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepUpMtr1ActionPerformed
+        int move_direction = -1; // set this to 1 or -1 to switch direction
         int moveIncrement = 25;
-        moveIncrement = Integer.parseInt(jTextField_IncrementMtr1.getText());
+        moveIncrement = move_direction * Integer.parseInt(jTextField_IncrementMtr1.getText());
         short currentPos = motor2.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr1 "+TargetPosMtr1 );
         TargetPosMtr1 = TargetPosMtr1 + moveIncrement;
@@ -1015,8 +946,9 @@ public class JFrameClass extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonStepUpMtr1ActionPerformed
 
     private void jButtonStepDownMtr1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepDownMtr1ActionPerformed
-        int moveIncrement = -25;
-        moveIncrement = -Integer.parseInt(jTextField_IncrementMtr1.getText());
+        int move_direction = 1; // set this to 1 or -1 to switch direction
+        int moveIncrement = 25;
+        moveIncrement = move_direction * Integer.parseInt(jTextField_IncrementMtr1.getText());
         short currentPos = motor2.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr1 "+TargetPosMtr1 );
         TargetPosMtr1 = TargetPosMtr1 + moveIncrement;
@@ -1050,8 +982,9 @@ public class JFrameClass extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonMoveMtr2ToPresetHighActionPerformed
 
     private void jButtonStepUpMtr2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepUpMtr2ActionPerformed
+        int move_direction = -1; // set this to 1 or -1 to switch direction
         int moveIncrement = 25;
-        moveIncrement = Integer.parseInt(jTextField_IncrementMtr2.getText());
+        moveIncrement = move_direction * Integer.parseInt(jTextField_IncrementMtr2.getText());
         short currentPos = motor3.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr2 "+TargetPosMtr2 );
         TargetPosMtr2 = TargetPosMtr2 + moveIncrement;
@@ -1065,8 +998,9 @@ public class JFrameClass extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonStepUpMtr2ActionPerformed
 
     private void jButtonStepDownMtr2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepDownMtr2ActionPerformed
-        int moveIncrement = -25;
-        moveIncrement = -Integer.parseInt(jTextField_IncrementMtr2.getText());
+        int move_direction = 1; // set this to 1 or -1 to switch direction
+        int moveIncrement = 25;
+        moveIncrement = move_direction * Integer.parseInt(jTextField_IncrementMtr2.getText());
         short currentPos = motor3.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr2 "+TargetPosMtr2 );
         TargetPosMtr2 = TargetPosMtr2 + moveIncrement;
@@ -1100,8 +1034,8 @@ public class JFrameClass extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonMoveMtr3ToPresetHighActionPerformed
 
     private void jButtonStepUpMtr3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepUpMtr3ActionPerformed
-        int moveIncrement = 25;
-        moveIncrement = Integer.parseInt(jTextField_IncrementMtr3.getText());
+        int moveIncrement = -25;
+        moveIncrement = -Integer.parseInt(jTextField_IncrementMtr3.getText());
         short currentPos = motor4.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr3 "+TargetPosMtr3 );
         TargetPosMtr3 = TargetPosMtr3 + moveIncrement;
@@ -1115,8 +1049,8 @@ public class JFrameClass extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonStepUpMtr3ActionPerformed
 
     private void jButtonStepDownMtr3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepDownMtr3ActionPerformed
-        int moveIncrement = -25;
-        moveIncrement = -Integer.parseInt(jTextField_IncrementMtr3.getText());
+        int moveIncrement = 25;
+        moveIncrement = Integer.parseInt(jTextField_IncrementMtr3.getText());
         short currentPos = motor4.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr3 "+TargetPosMtr3 );
         TargetPosMtr3 = TargetPosMtr3 + moveIncrement;
@@ -1322,6 +1256,8 @@ public class JFrameClass extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabelMotor1;
     private javax.swing.JLabel jLabelMotor2;
     private javax.swing.JLabel jLabelMotor3;
