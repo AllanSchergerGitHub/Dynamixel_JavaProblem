@@ -30,7 +30,7 @@ public class MotorClass {
     
     private String mBatch_time_stamp_into_mysql  = "initialized_in_MotorClass";
     private short[] ADDR_MX_TORQUE_ENABLE        = new short[]{24,24,24,24,24,24,24,24}; // Control table address is different in Dynamixel model. [index size]
-    private byte[] DXL_ID                        = new byte[]{16,12,11,13, 6,2,1,3};    // Dynamixel ID: 6 = End Effector; 2 = wrist; 1 = elbow; 3 = sholder; 
+    private byte[] DXL_ID                        = new byte[]{16,12,2,13, 6,5,1,3};    // Dynamixel ID: 16 = End Effector; 12 = wrist; 2 = elbow; 13 = sholder; 
     private int[] PROTOCOL_VERSION               = {1,1,1,1,1,1,1,1};   // See which protocol version is used in the Dynamixel
     private byte[] TORQUE_ENABLE                 = {1,1,1,1,1,1,1,1};           // Value for enabling the torque
     private byte[] TORQUE_DISABLE                = {0,0,0,0,0,0,0,0};                  // Value for disabling the torque
@@ -38,13 +38,14 @@ public class MotorClass {
     private short dxl_goal_position              = 300;
     private short[] ADDR_MX_PRESENT_POSITION     = new short[] {36,36,36,36,36,36,36,36};
     private short[] ADDR_MX_PRESENT_LOAD         = {40,40,40,40,40,40,40,40};
+    private short[] ADDR_MX_PresentTemperature   = {43,43,43,43,43,43,43,43};
     private int COMM_SUCCESS                     = 0;                   // Communication Success result value
     private int COMM_TX_FAIL                     = -1001;               // Communication Tx Failed
     private short[] ADDR_SET_RETURN_DELAY        = new short[]{5,5,5,5,5,5,5,5}; // NOTE - torque must be off (set to zero 0) before this will work (EEPROM area)
     private byte[] RETURN_DELAY                  = new byte[] {1,1,1,1,1,1,1,1}; // NOTE - torque must be off (set to zero 0) before this will work (EEPROM area)
     private byte dxl_error = 0;
     private int[] Target_Torque                  = {600,600,600,600,0,0,0,0}; // between 0 and 1023
-    private int[] Target_MovingSpeed             = {28,28,28,28,0,0,0,0}; // between 0 and 1023
+    private int[] Target_MovingSpeed             = {150,20,15,8,0,0,0,0}; // between 0 and 1023
     
     private short[] ADDR_movingspeed             = {32,32,32,32,32,32,32,32};
     private short[] ADDR_SET_TORQUE              = {34,34,34,34,34,34,34,34};  // address to set Torque. 
@@ -76,13 +77,15 @@ public class MotorClass {
                 error_counter = error_counter+1;
                 //if(mTogglePrintDebugValue){
                 try {
-                    sleep(3);
+                    sleep(6);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(MotorClass.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                System.err.println("error msg: "+tries +" motorNumber " + motorNumber + " " + dxl_comm_result + " " + dynamixel.getTxRxResult(PROTOCOL_VERSION[motorNumber], dxl_comm_result) + " moveMotor (goal position) NOT done correctly ");
-                //System.err.println("error msg: " + motorNumber+" <- motorNumber.  moveMotor (goal position) NOT done correctly "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
-                System.err.println("errors " + error_counter +"; motorNumber " + motorNumber);
+                if(mTogglePrintDebugValue){
+                    System.err.println("error msg: "+tries +" motorNumber " + motorNumber + " " + dxl_comm_result + " " + dynamixel.getTxRxResult(PROTOCOL_VERSION[motorNumber], dxl_comm_result) + " moveMotor (goal position) NOT done correctly ");
+                    //System.err.println("error msg: " + motorNumber+" <- motorNumber.  moveMotor (goal position) NOT done correctly "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
+                    System.err.println("errors " + error_counter +"; motorNumber " + motorNumber);
+                }
                 //}
             }
             else {
@@ -112,12 +115,6 @@ public class MotorClass {
                 stopNow=true;
             }
             if(stopNow){
-//                try {
-//                    //sleep(0);
-//                    //System.err.println("break now for motor: "+motorNumber);
-//                } catch (InterruptedException ex) {
-//                    Logger.getLogger(MotorClass.class.getName()).log(Level.SEVERE, null, ex);
-//                }
                 if(mTogglePrintDebugValue){
                 System.err.println("break now for motor: "+motorNumber);
                 }
@@ -162,16 +159,41 @@ public class MotorClass {
         short load = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_MX_PRESENT_LOAD[motorNumber]);
         if ((dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber])) != COMM_SUCCESS)
         {
-            //System.err.println(load+ " <-load. "+motorNumber + " <<motorNumber. Load Not read correctly"+dxl_comm_result+" "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
+            if(mTogglePrintDebugValue){
+                System.err.println(load+ " <-load. "+motorNumber + " <<motorNumber. Load Not read correctly"+dxl_comm_result+" "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
+            }
             short loadReadFail = (short)999999;
             return loadReadFail;
         }
         else if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION[motorNumber])) != 0)
         {
-            System.err.println(dxl_error+" dxl_error is here --------------------------------------");
+          System.err.println(dxl_error+" dxl_error is here --------------------------------------");
           dynamixel.printRxPacketError(PROTOCOL_VERSION[motorNumber], dxl_error);
         }
         return load;
+    }
+    
+    /**
+     * pings the dynamixel to determine the temperature inside the device
+     * @return 
+     */
+    public short readPresentTemperature() {
+        short temperature = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_MX_PresentTemperature[motorNumber]);
+        if ((dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber])) != COMM_SUCCESS)
+        {
+            if(mTogglePrintDebugValue){
+                System.err.println(temperature+ " <-Temperature. "+motorNumber + " <<motorNumber. Temperature Not read correctly"+dxl_comm_result+" "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
+            }
+            short ReadFail = (short)50; // some kind of error message (probably not reading temp correctly; but not sure). Setting to a normal value within a reasonable range to avoid triggering a high temp warning.
+            return ReadFail;
+        }
+        else if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION[motorNumber])) != 0)
+        {
+          System.err.println(dxl_error+" dxl_error temperature reading erro is here --------------------------------------");
+          dynamixel.printRxPacketError(PROTOCOL_VERSION[motorNumber], dxl_error);
+        }
+        
+        return temperature;
     }
     
     /**
@@ -193,7 +215,29 @@ public class MotorClass {
      */
     public void setMovingSpeed(int movingSpeed){
         // torque is how hard it pushes; speed is how fast speed 35 is ~3 RPM
+        int tries = 0;
+        while (tries<8){
+            tries = tries + 1;  
         dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_movingspeed[motorNumber], (short)movingSpeed); // moving speed set to 20
+        if ((dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber])) != COMM_SUCCESS)
+        {
+                error_counter = error_counter+1;
+                //if(mTogglePrintDebugValue){
+                try {
+                    sleep(10);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(MotorClass.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                if(mTogglePrintDebugValue){
+                    System.err.println("error msg: "+tries +" motorNumber " + motorNumber + " " + dxl_comm_result + " " + dynamixel.getTxRxResult(PROTOCOL_VERSION[motorNumber], dxl_comm_result) + " setSpeed NOT done correctly ");
+                    System.err.println("errors " + error_counter +"; motorNumber " + motorNumber);
+                }
+            }
+            else {
+                tries = 10;
+                System.out.println("Success disabling torque on motor # " + motorNumber);//. dxl_comm_result = " + dxl_comm_result);
+            }
+        }        
         int movingSpeedSetting2 = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_movingspeed[motorNumber]);
         System.out.println("moving speed "+motorNumber+" set to "+movingSpeedSetting2);
     }
@@ -249,15 +293,39 @@ public class MotorClass {
     }
     
     public void disableTorque() {
+        int tries = 0;
+        while (tries<8){
+            tries = tries + 1;        
+        
         dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION[motorNumber], DXL_ID[motorNumber], ADDR_MX_TORQUE_ENABLE[motorNumber], TORQUE_DISABLE[motorNumber]);
         if ((dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber])) != COMM_SUCCESS)
-        {
-            System.out.println("here attempting to disable "+dxl_comm_result+" "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
-            System.out.println(dynamixel.getTxRxResult(PROTOCOL_VERSION[motorNumber], dxl_comm_result));
+            {
+                error_counter = error_counter+1;
+                //if(mTogglePrintDebugValue){
+                try {
+                    sleep(10);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(MotorClass.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                if(mTogglePrintDebugValue){
+                    System.err.println("error msg: "+tries +" motorNumber " + motorNumber + " " + dxl_comm_result + " " + dynamixel.getTxRxResult(PROTOCOL_VERSION[motorNumber], dxl_comm_result) + " moveMotor (goal position) NOT done correctly ");
+                    //System.err.println("error msg: " + motorNumber+" <- motorNumber.  moveMotor (goal position) NOT done correctly "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
+                    System.err.println("errors " + error_counter +"; motorNumber " + motorNumber);
+                }
+                //}
+            }
+            else {
+                tries = 10;
+                System.out.println("Success disabling torque on motor # " + motorNumber);//. dxl_comm_result = " + dxl_comm_result);
+            }
         }
+            if (mTogglePrintDebugValue){
+            System.out.println("here attempting to disable "+dynamixel.getTxRxResult(PROTOCOL_VERSION[motorNumber], dxl_comm_result) + " "+dxl_comm_result+" "+dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION[motorNumber]));
+            }
+        
         else if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION[motorNumber])) != 0)
         {
-            System.out.println("here2 attempting to disable");
+          System.out.println("here2 attempting to disable");
           dynamixel.printRxPacketError(PROTOCOL_VERSION[motorNumber], dxl_error);
         }
     }

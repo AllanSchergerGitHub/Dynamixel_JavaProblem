@@ -39,6 +39,7 @@ import javax.swing.SwingWorker;
 public class JFrameClass extends javax.swing.JFrame {
 
     public String Batch_time_stamp_into_mysql = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
+    String time_stamp_into_mysql = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
     Dynamixel dynamixel = new Dynamixel();
     String DEVICENAME                   = "COM3";   
     
@@ -52,9 +53,9 @@ public class JFrameClass extends javax.swing.JFrame {
     private int recordPositions = 0; // 0 means do not record; 1 means yes to record
     private int recordOnce = 0; // records one record to mySQL and then stops recording.
     int TargetPosMtr0 = 200;
-    int TargetPosMtr1 = 250;
-    int TargetPosMtr2 = 400;
-    int TargetPosMtr3 = 480;
+    int TargetPosMtr1 = 850;
+    int TargetPosMtr2 = 500;
+    int TargetPosMtr3 = 500;
     int port_num = 0;
     int load1 = 0;
     int load2 = 0;
@@ -77,7 +78,6 @@ public class JFrameClass extends javax.swing.JFrame {
     
     public JFrameClass() {
         initComponents();
-        final JTextArea textArea = new JTextArea(20, 50);
         final PausableSwingWorker<Void, String> worker = new PausableSwingWorker<Void, String>() {
                 @Override
                 protected Void doInBackground() {
@@ -145,31 +145,38 @@ public class JFrameClass extends javax.swing.JFrame {
 
                     dxl_goal_position = 200;
                     motor1.moveMotor(dxl_goal_position);
-                    dxl_goal_position = 350;
+
+                    dxl_goal_position = 700;
                     motor2.moveMotor(dxl_goal_position);
-                    dxl_goal_position = 400;
+
+                    dxl_goal_position = 508;
                     motor3.moveMotor(dxl_goal_position);
+
                     dxl_goal_position = 520;
                     motor4.moveMotor(dxl_goal_position); // shoulder
-                    try {
-                        sleep(1500);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(MotorClass.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-
-                    dxl_goal_position = (short) TargetPosMtr0; // end effector
-                    motor1.moveMotor(dxl_goal_position);
-
-                    dxl_goal_position = (short) TargetPosMtr1; // elbow
-                    motor2.moveMotor(dxl_goal_position);
-
-                    dxl_goal_position = (short) TargetPosMtr2; // wrist
-                    motor3.moveMotor(dxl_goal_position);
-
-                    dxl_goal_position = (short) TargetPosMtr3; // shoulder
-                    motor4.moveMotor(dxl_goal_position);
+//                    try {
+//                        sleep(1500);
+//                    } catch (InterruptedException ex) {
+//                        Logger.getLogger(MotorClass.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//
+//                    dxl_goal_position = (short) TargetPosMtr0; // end effector
+//                    motor1.moveMotor(dxl_goal_position);
+//
+//                    dxl_goal_position = (short) TargetPosMtr1; // elbow
+//                    motor2.moveMotor(dxl_goal_position);
+//
+//                    dxl_goal_position = (short) TargetPosMtr2; // wrist
+//                    motor3.moveMotor(dxl_goal_position);
+//
+//                    dxl_goal_position = (short) TargetPosMtr3; // shoulder
+//                    motor4.moveMotor(dxl_goal_position);
 
                     System.out.println("------------------------------------------------------------------ end of jclass");
+                    jSlider1_ActualTemp.setOpaque(true);
+                    jSlider2_ActualTemp.setOpaque(true);
+                    jSlider3_ActualTemp.setOpaque(true);
+                    jSlider4_ActualTemp.setOpaque(true);
 
                     int x1 = 0;
 
@@ -183,7 +190,6 @@ public class JFrameClass extends javax.swing.JFrame {
                         }
                         int x = 0;
                         while(true) {
-                            System.out.println("doing this now");
                             x = x + 1;
                             try {    
                                 if (FollowDriverFlag) { 
@@ -264,7 +270,8 @@ public class JFrameClass extends javax.swing.JFrame {
                                     jTextField_PositionMtr0.setText(position1+"");
                                     sleep(1);
                                     short load1 = motor1.readLoad();
-                                    System.out.println("Load1 " + load1 + " Position motor1 "+position1);
+                                    //System.out.println("Load1 " + load1 + " Position motor1 "+position1);
+                                    jTextField_Load_1.setText(load1 + "");
                                     if (load1 == 16959){
                                         jLabelMotor1.setOpaque(true);
                                         jLabelMotor1.setBackground(Color.red);
@@ -272,11 +279,23 @@ public class JFrameClass extends javax.swing.JFrame {
                                     else {
                                         jLabelMotor1.setBackground(Color.green);
                                     }
-
+                                    int Temp1C = motor1.readPresentTemperature(); // this also has read errors that appear to be high temps
+                                    int Temp1F = Temp1C*9/5+32;
+                                    jSlider1_ActualTemp.setValue(Temp1F);
+                                    if (Temp1F>140) {
+                                        //System.err.println("Fahrenheit: " + Temp1F + " motor1 Temperature is high " + Temp1C);
+                                            jSlider1_ActualTemp.setBackground(Color.red);
+                                        }
+                                        else {
+                                            jSlider1_ActualTemp.setBackground(Color.green);
+                                        }
                                     sleep(2); // RxTx takes 100 ms? need to reread documentation.
                                     position2 = motor2.readPosition();	
                                     jTextField_PositionMtr1.setText(position2+"");	
-                                    int load2 = motor2.readLoad();	
+                                    int load2 = motor2.readLoad();
+                                    
+                                    jTextField_Load_2.setText(load2 + "");
+                                    
                                     if (load2 == 999999){	
                                         jLabelMotor2.setOpaque(true);
                                         jLabelMotor2.setBackground(Color.red);	
@@ -285,25 +304,47 @@ public class JFrameClass extends javax.swing.JFrame {
                                         jLabelMotor2.setOpaque(true);
                                         jLabelMotor2.setBackground(Color.green);	
                                     }	
-
-
-                                     sleep(2); // RxTx takes 100 ms? need to reread documentation.	
+                                    int Temp2C = motor2.readPresentTemperature(); // this also has read errors that appear to be high temps
+                                    int Temp2F = Temp2C*9/5+32;
+                                    jSlider2_ActualTemp.setValue(Temp2F);
+                                    if (Temp2F>140) {
+                                        //System.err.println("Fahrenheit: " + Temp2F + " motor2 Temperature is high " + Temp2C);
+                                            jSlider2_ActualTemp.setBackground(Color.RED);
+                                        }
+                                        else {
+                                            jSlider2_ActualTemp.setBackground(Color.GREEN);
+                                        }
+                                    sleep(2); // RxTx takes 100 ms? need to reread documentation.	
                                     position3 = motor3.readPosition();	
                                     jTextField_PositionMtr2.setText(position3+"");	
-                                    int load3 = motor3.readLoad();	
+                                    int load3 = motor3.readLoad();
+                                    
+                                    jTextField_Load_3.setText(load3 + "");
+                                    
                                     if (load3 == 999999){
                                         jLabelMotor3.setOpaque(true);
-                                        jLabelMotor3.setBackground(Color.red);	
+                                        jLabelMotor3.setBackground(Color.RED);	
                                     }	
                                     else {
                                         jLabelMotor3.setOpaque(true);
-                                        jLabelMotor3.setBackground(Color.green);	
+                                        jLabelMotor3.setBackground(Color.GREEN);	
                                     }
-
+                                    int Temp3C = motor3.readPresentTemperature(); // this also has read errors that appear to be high temps
+                                    int Temp3F = Temp3C*9/5+32;
+                                    jSlider3_ActualTemp.setValue(Temp3F);
+                                    if (Temp3F>140) {
+                                        //System.err.println("Fahrenheit: " + Temp3F + " motor3 Temperature is high " + Temp3C);
+                                            jSlider3_ActualTemp.setBackground(Color.RED);
+                                        }
+                                        else {
+                                            jSlider3_ActualTemp.setBackground(Color.GREEN);
+                                        }
                                     sleep(2); // RxTx takes 100 ms? need to reread documentation.
                                     position4 = motor4.readPosition();	
                                     jTextField_PositionMtr3.setText(position4+"");	
+                                    jScrollBarMtr4_Actual.setValue(position4);
                                     int load4 = motor4.readLoad();	
+                                    jTextField_LoadEndEffector.setText(load4 + "");
                                     if (load4 == 999999){
                                         jLabelMotor4.setOpaque(true);
                                         jLabelMotor4.setBackground(Color.red);	
@@ -312,9 +353,18 @@ public class JFrameClass extends javax.swing.JFrame {
                                         jLabelMotor4.setOpaque(true);
                                         jLabelMotor4.setBackground(Color.green);	
                                     }	
+                                    int Temp4C = motor4.readPresentTemperature(); // this also has read errors that appear to be high temps
+                                    int Temp4F = Temp4C*9/5+32;
+                                    jSlider4_ActualTemp.setValue(Temp4F);
+                                    if (Temp4F>140) {
+                                        //System.err.println("Fahrenheit: " + Temp4F + " motor4 Temperature is high " + Temp4C);
+                                            jSlider4_ActualTemp.setBackground(Color.RED);
+                                        }
+                                        else {
+                                            jSlider4_ActualTemp.setBackground(Color.GREEN);
+                                        }
 
-                                double yDistance = 2;
-                                String time_stamp_into_mysql = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
+                                time_stamp_into_mysql = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format(new Date());
                                 scenarioSaveName = jTextFieldRecordScenarioName.getText();
 
                                 if(position1!=0 && position2!=0 && position3!=0 && position4!=0){ // only record when positions are not zero	
@@ -354,7 +404,7 @@ public class JFrameClass extends javax.swing.JFrame {
         jLabelMotor1 = new javax.swing.JLabel();
         jScrollBarMtr1 = new javax.swing.JScrollBar();
         jScrollBarMtr2 = new javax.swing.JScrollBar();
-        jScrollBarMtr3 = new javax.swing.JScrollBar();
+        jScrollBarMtr4_Target = new javax.swing.JScrollBar();
         jLabelMotor2 = new javax.swing.JLabel();
         jButtonStepUpMtr0 = new javax.swing.JButton();
         jButtonStepDownMtr0 = new javax.swing.JButton();
@@ -410,6 +460,21 @@ public class JFrameClass extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
+        jTextField_LoadEndEffector = new javax.swing.JTextField();
+        jTextField_Load_1 = new javax.swing.JTextField();
+        jTextField_Load_3 = new javax.swing.JTextField();
+        jTextField_Load_2 = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        jScrollBarMtr4_Actual = new javax.swing.JScrollBar();
+        jSlider4_ActualTemp = new javax.swing.JSlider();
+        jSlider1_ActualTemp = new javax.swing.JSlider();
+        jSlider2_ActualTemp = new javax.swing.JSlider();
+        jSlider3_ActualTemp = new javax.swing.JSlider();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
+        jTextField2 = new javax.swing.JTextField();
+        jTextField3 = new javax.swing.JTextField();
+        jTextField4 = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -446,7 +511,8 @@ public class JFrameClass extends javax.swing.JFrame {
 
         jScrollBarMtr1.setBlockIncrement(20);
         jScrollBarMtr1.setMaximum(1000);
-        jScrollBarMtr1.setMinimum(300);
+        jScrollBarMtr1.setMinimum(700);
+        jScrollBarMtr1.setValue(850);
         jScrollBarMtr1.setVisibleAmount(20);
         jScrollBarMtr1.addAdjustmentListener(new java.awt.event.AdjustmentListener() {
             public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt) {
@@ -456,8 +522,9 @@ public class JFrameClass extends javax.swing.JFrame {
         getContentPane().add(jScrollBarMtr1, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 53, 30, 130));
 
         jScrollBarMtr2.setBlockIncrement(20);
-        jScrollBarMtr2.setMaximum(1000);
-        jScrollBarMtr2.setMinimum(100);
+        jScrollBarMtr2.setMaximum(720);
+        jScrollBarMtr2.setMinimum(340);
+        jScrollBarMtr2.setValue(500);
         jScrollBarMtr2.setVisibleAmount(20);
         jScrollBarMtr2.addAdjustmentListener(new java.awt.event.AdjustmentListener() {
             public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt) {
@@ -466,16 +533,17 @@ public class JFrameClass extends javax.swing.JFrame {
         });
         getContentPane().add(jScrollBarMtr2, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 53, 33, 130));
 
-        jScrollBarMtr3.setBlockIncrement(20);
-        jScrollBarMtr3.setMaximum(1000);
-        jScrollBarMtr3.setMinimum(100);
-        jScrollBarMtr3.setVisibleAmount(20);
-        jScrollBarMtr3.addAdjustmentListener(new java.awt.event.AdjustmentListener() {
+        jScrollBarMtr4_Target.setBlockIncrement(20);
+        jScrollBarMtr4_Target.setMaximum(700);
+        jScrollBarMtr4_Target.setMinimum(385);
+        jScrollBarMtr4_Target.setValue(500);
+        jScrollBarMtr4_Target.setVisibleAmount(20);
+        jScrollBarMtr4_Target.addAdjustmentListener(new java.awt.event.AdjustmentListener() {
             public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt) {
-                jScrollBarMtr3AdjustmentValueChanged(evt);
+                jScrollBarMtr4_TargetAdjustmentValueChanged(evt);
             }
         });
-        getContentPane().add(jScrollBarMtr3, new org.netbeans.lib.awtextra.AbsoluteConstraints(620, 53, 36, 130));
+        getContentPane().add(jScrollBarMtr4_Target, new org.netbeans.lib.awtextra.AbsoluteConstraints(620, 53, 36, 130));
 
         jLabelMotor2.setText("Position");
         getContentPane().add(jLabelMotor2, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 280, 67, 32));
@@ -724,7 +792,7 @@ public class JFrameClass extends javax.swing.JFrame {
         });
         getContentPane().add(jButtonRunASequence2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 160, 145, -1));
 
-        jTextFieldSpeedMotor1.setText("50");
+        jTextFieldSpeedMotor1.setText("150");
         jTextFieldSpeedMotor1.setMinimumSize(new java.awt.Dimension(12, 25));
         jTextFieldSpeedMotor1.setPreferredSize(new java.awt.Dimension(25, 28));
         jTextFieldSpeedMotor1.addActionListener(new java.awt.event.ActionListener() {
@@ -734,7 +802,7 @@ public class JFrameClass extends javax.swing.JFrame {
         });
         getContentPane().add(jTextFieldSpeedMotor1, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 190, 50, -1));
 
-        jTextFieldSpeedMotor2.setText("50");
+        jTextFieldSpeedMotor2.setText("20");
         jTextFieldSpeedMotor2.setMinimumSize(new java.awt.Dimension(12, 25));
         jTextFieldSpeedMotor2.setPreferredSize(new java.awt.Dimension(25, 28));
         jTextFieldSpeedMotor2.addActionListener(new java.awt.event.ActionListener() {
@@ -744,7 +812,7 @@ public class JFrameClass extends javax.swing.JFrame {
         });
         getContentPane().add(jTextFieldSpeedMotor2, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 190, 50, -1));
 
-        jTextFieldSpeedMotor3.setText("50");
+        jTextFieldSpeedMotor3.setText("15");
         jTextFieldSpeedMotor3.setMinimumSize(new java.awt.Dimension(12, 25));
         jTextFieldSpeedMotor3.setPreferredSize(new java.awt.Dimension(25, 28));
         jTextFieldSpeedMotor3.addActionListener(new java.awt.event.ActionListener() {
@@ -754,7 +822,7 @@ public class JFrameClass extends javax.swing.JFrame {
         });
         getContentPane().add(jTextFieldSpeedMotor3, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 190, 50, -1));
 
-        jTextFieldSpeedMotor4.setText("50");
+        jTextFieldSpeedMotor4.setText("8");
         jTextFieldSpeedMotor4.setMinimumSize(new java.awt.Dimension(12, 25));
         jTextFieldSpeedMotor4.setPreferredSize(new java.awt.Dimension(25, 28));
         jTextFieldSpeedMotor4.addActionListener(new java.awt.event.ActionListener() {
@@ -767,7 +835,7 @@ public class JFrameClass extends javax.swing.JFrame {
         jLabel1.setText("Speed");
         getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 200, -1, -1));
 
-        jTextField_IncrementMtr0.setText("20");
+        jTextField_IncrementMtr0.setText("250");
         jTextField_IncrementMtr0.setMinimumSize(new java.awt.Dimension(12, 25));
         jTextField_IncrementMtr0.setPreferredSize(new java.awt.Dimension(25, 28));
         getContentPane().add(jTextField_IncrementMtr0, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 220, 50, -1));
@@ -782,7 +850,7 @@ public class JFrameClass extends javax.swing.JFrame {
         jTextField_IncrementMtr2.setPreferredSize(new java.awt.Dimension(25, 28));
         getContentPane().add(jTextField_IncrementMtr2, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 220, 50, -1));
 
-        jTextField_IncrementMtr3.setText("25");
+        jTextField_IncrementMtr3.setText("10");
         jTextField_IncrementMtr3.setMinimumSize(new java.awt.Dimension(12, 25));
         jTextField_IncrementMtr3.setPreferredSize(new java.awt.Dimension(25, 28));
         getContentPane().add(jTextField_IncrementMtr3, new org.netbeans.lib.awtextra.AbsoluteConstraints(620, 220, 50, -1));
@@ -835,7 +903,106 @@ public class JFrameClass extends javax.swing.JFrame {
         getContentPane().add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 10, 60, 30));
 
         jLabel7.setText("Sholder");
-        getContentPane().add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(610, 10, 60, 30));
+        getContentPane().add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(635, 10, 60, 30));
+
+        jTextField_LoadEndEffector.setText("Load");
+        jTextField_LoadEndEffector.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField_LoadEndEffectorActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jTextField_LoadEndEffector, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 310, -1, -1));
+
+        jTextField_Load_1.setText("Load");
+        jTextField_Load_1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField_Load_1ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jTextField_Load_1, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 310, -1, -1));
+
+        jTextField_Load_3.setText("Load");
+        jTextField_Load_3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField_Load_3ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jTextField_Load_3, new org.netbeans.lib.awtextra.AbsoluteConstraints(620, 310, -1, -1));
+
+        jTextField_Load_2.setText("Load");
+        jTextField_Load_2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField_Load_2ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jTextField_Load_2, new org.netbeans.lib.awtextra.AbsoluteConstraints(470, 310, -1, -1));
+
+        jLabel8.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel8.setText("Wrist");
+        getContentPane().add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 10, 70, 30));
+
+        jScrollBarMtr4_Actual.setBlockIncrement(20);
+        jScrollBarMtr4_Actual.setMaximum(700);
+        jScrollBarMtr4_Actual.setMinimum(385);
+        jScrollBarMtr4_Actual.setValue(500);
+        jScrollBarMtr4_Actual.setFocusable(false);
+        jScrollBarMtr4_Actual.addAdjustmentListener(new java.awt.event.AdjustmentListener() {
+            public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt) {
+                jScrollBarMtr4_ActualAdjustmentValueChanged(evt);
+            }
+        });
+        getContentPane().add(jScrollBarMtr4_Actual, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 53, 36, 130));
+
+        jSlider4_ActualTemp.setMaximum(160);
+        jSlider4_ActualTemp.setMinimum(110);
+        jSlider4_ActualTemp.setMinorTickSpacing(10);
+        jSlider4_ActualTemp.setOrientation(javax.swing.JSlider.VERTICAL);
+        jSlider4_ActualTemp.setPaintLabels(true);
+        jSlider4_ActualTemp.setPaintTicks(true);
+        getContentPane().add(jSlider4_ActualTemp, new org.netbeans.lib.awtextra.AbsoluteConstraints(880, 100, 20, -1));
+
+        jSlider1_ActualTemp.setMaximum(160);
+        jSlider1_ActualTemp.setMinimum(110);
+        jSlider1_ActualTemp.setMinorTickSpacing(10);
+        jSlider1_ActualTemp.setOrientation(javax.swing.JSlider.VERTICAL);
+        jSlider1_ActualTemp.setPaintLabels(true);
+        jSlider1_ActualTemp.setPaintTicks(true);
+        jSlider1_ActualTemp.setToolTipText("");
+        getContentPane().add(jSlider1_ActualTemp, new org.netbeans.lib.awtextra.AbsoluteConstraints(790, 100, 20, -1));
+
+        jSlider2_ActualTemp.setMaximum(160);
+        jSlider2_ActualTemp.setMinimum(110);
+        jSlider2_ActualTemp.setMinorTickSpacing(10);
+        jSlider2_ActualTemp.setOrientation(javax.swing.JSlider.VERTICAL);
+        jSlider2_ActualTemp.setPaintLabels(true);
+        jSlider2_ActualTemp.setPaintTicks(true);
+        getContentPane().add(jSlider2_ActualTemp, new org.netbeans.lib.awtextra.AbsoluteConstraints(820, 100, 20, -1));
+
+        jSlider3_ActualTemp.setMaximum(160);
+        jSlider3_ActualTemp.setMinimum(110);
+        jSlider3_ActualTemp.setMinorTickSpacing(10);
+        jSlider3_ActualTemp.setOrientation(javax.swing.JSlider.VERTICAL);
+        jSlider3_ActualTemp.setPaintLabels(true);
+        jSlider3_ActualTemp.setPaintTicks(true);
+        getContentPane().add(jSlider3_ActualTemp, new org.netbeans.lib.awtextra.AbsoluteConstraints(850, 100, 20, -1));
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setLineWrap(true);
+        jTextArea1.setRows(5);
+        jTextArea1.setText("Temperature Sensors. \nShutdown occurs at 158 F (70 C).");
+        jTextArea1.setWrapStyleWord(true);
+        jScrollPane1.setViewportView(jTextArea1);
+
+        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(750, 310, 230, 100));
+
+        jTextField2.setText("140 F");
+        getContentPane().add(jTextField2, new org.netbeans.lib.awtextra.AbsoluteConstraints(910, 170, -1, -1));
+
+        jTextField3.setText("110 F");
+        getContentPane().add(jTextField3, new org.netbeans.lib.awtextra.AbsoluteConstraints(910, 275, -1, -1));
+
+        jTextField4.setText("160 F");
+        getContentPane().add(jTextField4, new org.netbeans.lib.awtextra.AbsoluteConstraints(910, 100, -1, -1));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -853,33 +1020,41 @@ public class JFrameClass extends javax.swing.JFrame {
     private void jScrollBarMtr0AdjustmentValueChanged(java.awt.event.AdjustmentEvent evt) {//GEN-FIRST:event_jScrollBarMtr0AdjustmentValueChanged
         short j = (short)jScrollBarMtr0.getValue();
         motor1.moveMotor(j);
+        TargetPosMtr0 = (int)j;
         jLabelMotor1.setText(""+j);
     }//GEN-LAST:event_jScrollBarMtr0AdjustmentValueChanged
 
     private void jScrollBarMtr1AdjustmentValueChanged(java.awt.event.AdjustmentEvent evt) {//GEN-FIRST:event_jScrollBarMtr1AdjustmentValueChanged
         short j = (short)jScrollBarMtr1.getValue();
         motor2.moveMotor(j);
+        TargetPosMtr1 = (int)j;
         jLabelMotor2.setText(""+j);
     }//GEN-LAST:event_jScrollBarMtr1AdjustmentValueChanged
 
     private void jScrollBarMtr2AdjustmentValueChanged(java.awt.event.AdjustmentEvent evt) {//GEN-FIRST:event_jScrollBarMtr2AdjustmentValueChanged
         short j = (short)jScrollBarMtr2.getValue();
         motor3.moveMotor(j);
+        TargetPosMtr2 = (int)j;
         jLabelMotor3.setText(""+j);
     }//GEN-LAST:event_jScrollBarMtr2AdjustmentValueChanged
 
-    private void jScrollBarMtr3AdjustmentValueChanged(java.awt.event.AdjustmentEvent evt) {//GEN-FIRST:event_jScrollBarMtr3AdjustmentValueChanged
-        short j = (short)jScrollBarMtr3.getValue();
+    private void jScrollBarMtr4_TargetAdjustmentValueChanged(java.awt.event.AdjustmentEvent evt) {//GEN-FIRST:event_jScrollBarMtr4_TargetAdjustmentValueChanged
+        short j = (short)jScrollBarMtr4_Target.getValue();
         motor4.moveMotor(j);
+        TargetPosMtr3 = (int)j;
         jLabelMotor4.setText(""+j);
-    }//GEN-LAST:event_jScrollBarMtr3AdjustmentValueChanged
+    }//GEN-LAST:event_jScrollBarMtr4_TargetAdjustmentValueChanged
 
     private void jButtonStepUpMtr0ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepUpMtr0ActionPerformed
-        int moveIncrement = 25;
-        moveIncrement = Integer.parseInt(jTextField_IncrementMtr0.getText());
+        int val = Integer.valueOf(jTextFieldSpeedMotor1.getText());
+        motor1.setMovingSpeed(val);
+        
+        int moveIncrement = -100;
+        moveIncrement = -Integer.parseInt(jTextField_IncrementMtr0.getText());
         //short currentPos = motor1.readPosition(); // currentPos is a local reading - testing to see if using the more global variable is better
         System.out.println("currentPosXXXXX "+ position1 + "; moveIncrement "+moveIncrement +" TargetPosMtr0 "+TargetPosMtr0 );
         TargetPosMtr0 = TargetPosMtr0 + moveIncrement;
+        jScrollBarMtr0.setValue(TargetPosMtr0);
         motor1.moveMotor((short)(TargetPosMtr0));
          try {
              sleep(1);
@@ -890,11 +1065,15 @@ public class JFrameClass extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonStepUpMtr0ActionPerformed
 
     private void jButtonStepDownMtr0ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepDownMtr0ActionPerformed
-        int moveIncrement = -25;
-        moveIncrement = -Integer.parseInt(jTextField_IncrementMtr0.getText());
+        int val = Integer.valueOf(jTextFieldSpeedMotor1.getText());
+        motor1.setMovingSpeed(val);
+        
+        int moveIncrement = 100;
+        moveIncrement = Integer.parseInt(jTextField_IncrementMtr0.getText());
         short currentPos = motor1.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr0 "+TargetPosMtr0 );
         TargetPosMtr0 = TargetPosMtr0 + moveIncrement;
+        jScrollBarMtr0.setValue(TargetPosMtr0);
         motor1.moveMotor((short)(TargetPosMtr0));
          try {
              sleep(1);
@@ -930,12 +1109,16 @@ public class JFrameClass extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonMoveMtr1ToPresetHighActionPerformed
 
     private void jButtonStepUpMtr1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepUpMtr1ActionPerformed
+        int val = Integer.valueOf(jTextFieldSpeedMotor2.getText());
+        motor2.setMovingSpeed(val);
+        
         int move_direction = -1; // set this to 1 or -1 to switch direction
         int moveIncrement = 25;
         moveIncrement = move_direction * Integer.parseInt(jTextField_IncrementMtr1.getText());
         short currentPos = motor2.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr1 "+TargetPosMtr1 );
         TargetPosMtr1 = TargetPosMtr1 + moveIncrement;
+        jScrollBarMtr1.setValue(TargetPosMtr1);
         motor2.moveMotor((short)(TargetPosMtr1));
          try {
              sleep(1);
@@ -946,12 +1129,16 @@ public class JFrameClass extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonStepUpMtr1ActionPerformed
 
     private void jButtonStepDownMtr1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepDownMtr1ActionPerformed
+        int val = Integer.valueOf(jTextFieldSpeedMotor2.getText());
+        motor2.setMovingSpeed(val);
+        
         int move_direction = 1; // set this to 1 or -1 to switch direction
         int moveIncrement = 25;
         moveIncrement = move_direction * Integer.parseInt(jTextField_IncrementMtr1.getText());
         short currentPos = motor2.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr1 "+TargetPosMtr1 );
         TargetPosMtr1 = TargetPosMtr1 + moveIncrement;
+        jScrollBarMtr1.setValue(TargetPosMtr1);
         motor2.moveMotor((short)(TargetPosMtr1));
          try {
              sleep(1);
@@ -977,17 +1164,21 @@ public class JFrameClass extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonResetTorqueMtr1ActionPerformed
 
     private void jButtonMoveMtr2ToPresetHighActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonMoveMtr2ToPresetHighActionPerformed
-        motor3.moveMotor((short)650);
-        jLabelMotor3.setText(""+650);
+        motor3.moveMotor((short)340);
+        jLabelMotor3.setText(""+340);
     }//GEN-LAST:event_jButtonMoveMtr2ToPresetHighActionPerformed
 
     private void jButtonStepUpMtr2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepUpMtr2ActionPerformed
+        int val = Integer.valueOf(jTextFieldSpeedMotor3.getText());
+        motor3.setMovingSpeed(val);
+        
         int move_direction = -1; // set this to 1 or -1 to switch direction
         int moveIncrement = 25;
         moveIncrement = move_direction * Integer.parseInt(jTextField_IncrementMtr2.getText());
         short currentPos = motor3.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr2 "+TargetPosMtr2 );
         TargetPosMtr2 = TargetPosMtr2 + moveIncrement;
+        jScrollBarMtr2.setValue(TargetPosMtr2);
         motor3.moveMotor((short)(TargetPosMtr2));
          try {
              sleep(1);
@@ -998,12 +1189,16 @@ public class JFrameClass extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonStepUpMtr2ActionPerformed
 
     private void jButtonStepDownMtr2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepDownMtr2ActionPerformed
+        int val = Integer.valueOf(jTextFieldSpeedMotor3.getText());
+        motor3.setMovingSpeed(val);
+        
         int move_direction = 1; // set this to 1 or -1 to switch direction
         int moveIncrement = 25;
         moveIncrement = move_direction * Integer.parseInt(jTextField_IncrementMtr2.getText());
         short currentPos = motor3.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr2 "+TargetPosMtr2 );
         TargetPosMtr2 = TargetPosMtr2 + moveIncrement;
+        jScrollBarMtr2.setValue(TargetPosMtr2);
         motor3.moveMotor((short)(TargetPosMtr2));
          try {
              sleep(1);
@@ -1014,8 +1209,8 @@ public class JFrameClass extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonStepDownMtr2ActionPerformed
 
     private void jButtonMoveMtr2ToPresetLowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonMoveMtr2ToPresetLowActionPerformed
-        motor3.moveMotor((short)600);
-        jLabelMotor3.setText(""+600);
+        motor3.moveMotor((short)720);
+        jLabelMotor3.setText(""+720);
     }//GEN-LAST:event_jButtonMoveMtr2ToPresetLowActionPerformed
 
     private void jToggleButtonMtr2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButtonMtr2ActionPerformed
@@ -1029,16 +1224,20 @@ public class JFrameClass extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonResetTorqueMtr2ActionPerformed
 
     private void jButtonMoveMtr3ToPresetHighActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonMoveMtr3ToPresetHighActionPerformed
-        motor4.moveMotor((short)800);
-        jLabelMotor4.setText(""+800);
+        motor4.moveMotor((short)700);
+        jLabelMotor4.setText(""+700);
     }//GEN-LAST:event_jButtonMoveMtr3ToPresetHighActionPerformed
 
     private void jButtonStepUpMtr3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepUpMtr3ActionPerformed
+        int val = Integer.valueOf(jTextFieldSpeedMotor4.getText());
+        motor4.setMovingSpeed(val);
+        
         int moveIncrement = -25;
         moveIncrement = -Integer.parseInt(jTextField_IncrementMtr3.getText());
         short currentPos = motor4.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr3 "+TargetPosMtr3 );
         TargetPosMtr3 = TargetPosMtr3 + moveIncrement;
+        jScrollBarMtr4_Target.setValue(TargetPosMtr3);
         motor4.moveMotor((short)(TargetPosMtr3));
          try {
              sleep(1);
@@ -1046,14 +1245,20 @@ public class JFrameClass extends javax.swing.JFrame {
              Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
          }
         jLabelMotor4.setText(TargetPosMtr3+"");
+        
+        jScrollBarMtr4_Target.setValue(TargetPosMtr3);
     }//GEN-LAST:event_jButtonStepUpMtr3ActionPerformed
 
     private void jButtonStepDownMtr3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepDownMtr3ActionPerformed
+        int val = Integer.valueOf(jTextFieldSpeedMotor4.getText());
+        motor4.setMovingSpeed(val);
+        
         int moveIncrement = 25;
         moveIncrement = Integer.parseInt(jTextField_IncrementMtr3.getText());
         short currentPos = motor4.readPosition();
         System.out.println("currentPos "+ currentPos + "; moveIncrement "+moveIncrement +" TargetPosMtr3 "+TargetPosMtr3 );
         TargetPosMtr3 = TargetPosMtr3 + moveIncrement;
+        jScrollBarMtr4_Target.setValue(TargetPosMtr3);
         motor4.moveMotor((short)(TargetPosMtr3));
          try {
              sleep(1);
@@ -1061,11 +1266,13 @@ public class JFrameClass extends javax.swing.JFrame {
              Logger.getLogger(JFrameClass.class.getName()).log(Level.SEVERE, null, ex);
          }
         jLabelMotor4.setText(TargetPosMtr3+"");
+        
+        jScrollBarMtr4_Target.setValue(TargetPosMtr3);
     }//GEN-LAST:event_jButtonStepDownMtr3ActionPerformed
 
     private void jButtonMoveMtr3ToPresetLowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonMoveMtr3ToPresetLowActionPerformed
-        motor4.moveMotor((short)1000);
-        jLabelMotor4.setText(""+1000);
+        motor4.moveMotor((short)250);
+        jLabelMotor4.setText(""+250);
     }//GEN-LAST:event_jButtonMoveMtr3ToPresetLowActionPerformed
 
     private void jToggleButtonMtr3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButtonMtr3ActionPerformed
@@ -1126,16 +1333,19 @@ public class JFrameClass extends javax.swing.JFrame {
 
     private void jTextFieldSpeedMotor2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextFieldSpeedMotor2ActionPerformed
         int val = Integer.valueOf(jTextFieldSpeedMotor2.getText());
+        System.out.println("speed set to: "+val);
         motor2.setMovingSpeed(val);
     }//GEN-LAST:event_jTextFieldSpeedMotor2ActionPerformed
 
     private void jTextFieldSpeedMotor3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextFieldSpeedMotor3ActionPerformed
         int val = Integer.valueOf(jTextFieldSpeedMotor3.getText());
+        System.out.println("speed set to: "+val);
         motor3.setMovingSpeed(val);
     }//GEN-LAST:event_jTextFieldSpeedMotor3ActionPerformed
 
     private void jTextFieldSpeedMotor4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextFieldSpeedMotor4ActionPerformed
         int val = Integer.valueOf(jTextFieldSpeedMotor4.getText());
+        System.out.println("speed set to: "+val);
         motor4.setMovingSpeed(val);
     }//GEN-LAST:event_jTextFieldSpeedMotor4ActionPerformed
 
@@ -1163,6 +1373,26 @@ public class JFrameClass extends javax.swing.JFrame {
             jToggleButton_FollowDriverButton.setBackground(Color.red);
         }
     }//GEN-LAST:event_jToggleButton_FollowDriverButtonActionPerformed
+
+    private void jTextField_LoadEndEffectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField_LoadEndEffectorActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField_LoadEndEffectorActionPerformed
+
+    private void jTextField_Load_1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField_Load_1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField_Load_1ActionPerformed
+
+    private void jTextField_Load_3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField_Load_3ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField_Load_3ActionPerformed
+
+    private void jTextField_Load_2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField_Load_2ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField_Load_2ActionPerformed
+
+    private void jScrollBarMtr4_ActualAdjustmentValueChanged(java.awt.event.AdjustmentEvent evt) {//GEN-FIRST:event_jScrollBarMtr4_ActualAdjustmentValueChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jScrollBarMtr4_ActualAdjustmentValueChanged
 
     /**
      * @param args the command line arguments
@@ -1202,7 +1432,7 @@ public class JFrameClass extends javax.swing.JFrame {
         });
         
     }
-    
+
     abstract class PausableSwingWorker<K, V> extends SwingWorker<K, V> {
         private volatile boolean isPaused;
         public final void pause() {
@@ -1258,6 +1488,7 @@ public class JFrameClass extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabelMotor1;
     private javax.swing.JLabel jLabelMotor2;
     private javax.swing.JLabel jLabelMotor3;
@@ -1266,7 +1497,17 @@ public class JFrameClass extends javax.swing.JFrame {
     private javax.swing.JScrollBar jScrollBarMtr0;
     private javax.swing.JScrollBar jScrollBarMtr1;
     private javax.swing.JScrollBar jScrollBarMtr2;
-    private javax.swing.JScrollBar jScrollBarMtr3;
+    private javax.swing.JScrollBar jScrollBarMtr4_Actual;
+    private javax.swing.JScrollBar jScrollBarMtr4_Target;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JSlider jSlider1_ActualTemp;
+    private javax.swing.JSlider jSlider2_ActualTemp;
+    private javax.swing.JSlider jSlider3_ActualTemp;
+    private javax.swing.JSlider jSlider4_ActualTemp;
+    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextField jTextField2;
+    private javax.swing.JTextField jTextField3;
+    private javax.swing.JTextField jTextField4;
     private javax.swing.JTextField jTextFieldRecordScenarioName;
     private javax.swing.JTextField jTextFieldSpeedMotor1;
     private javax.swing.JTextField jTextFieldSpeedMotor2;
@@ -1276,6 +1517,10 @@ public class JFrameClass extends javax.swing.JFrame {
     private javax.swing.JTextField jTextField_IncrementMtr1;
     private javax.swing.JTextField jTextField_IncrementMtr2;
     private javax.swing.JTextField jTextField_IncrementMtr3;
+    private javax.swing.JTextField jTextField_LoadEndEffector;
+    private javax.swing.JTextField jTextField_Load_1;
+    private javax.swing.JTextField jTextField_Load_2;
+    private javax.swing.JTextField jTextField_Load_3;
     private javax.swing.JTextField jTextField_PositionMtr0;
     private javax.swing.JTextField jTextField_PositionMtr1;
     private javax.swing.JTextField jTextField_PositionMtr2;
